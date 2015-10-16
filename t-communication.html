@@ -1,0 +1,42 @@
+<!-- We are still creating this components -->
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../t-section-header/t-section-header.html" />
+<link rel="import" href="../t-creditcard/t-email-input.html" />
+<link rel="import" href="../t-creditcard/t-phone-input.html" />
+<dom-module id="t-communication">
+    <template>
+        <style>
+			.section{
+				padding: 0 10px;
+			}
+        </style>
+        <div class="layout vertical">
+            <t-section-header label="Communication details"></t-section-header>
+            <div class="section">
+                <t-phone-input name="phoneNumber" label="Phone" error-message="Enter mobile number" required auto-validate value="{{phone}}" ></t-phone-input>
+                <t-email-input name="email" label="Email" error-message="Enter email address" required auto-validate value="{{email}}"></t-email-input>
+            </div>
+        </div>
+    </template>
+</dom-module>
+<script>
+Polymer({
+
+    is: 't-communication',
+
+    properties: {
+
+        phone: {
+            type:String
+        },
+
+        email: {
+            type:String
+        }
+
+        /**
+         * Response object of the form.
+         */
+    }
+});
+</script>
