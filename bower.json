@@ -25,7 +25,7 @@
     "tests"
   ],
   "dependencies": { 
-    "t-creditcard": "atomproject/t-creditcard#0.0.0",
+    "t-input": "atomproject/t-input#0.0.0",
     "t-form": "atomproject/t-form#0.0.0",
     "t-section-header": "atomproject/t-section-header#0.0.0", 
     "polymer": "Polymer/polymer#^1.0.0"
