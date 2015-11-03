@@ -52,9 +52,9 @@
                     <t-section-header label="[[_getLabel(passenger.type,index)]]"></t-section-header>
                     <div class="section">
                         <div class="vertical-margin layout horizontal center">
-                            <t-input label="First" name$="{{_getName(passenger.type, index,'firstName')}}" error-message="Enter first name" required auto-validate value="{{passenger.FirstName}}"></t-input>
+                            <t-input label="First" name$="{{_getName(passenger.type, index,'firstName')}}" error-message="You missed this." required auto-validate value="{{passenger.FirstName}}"></t-input>
                             <t-input label="Middle" name$="{{_getName(passenger.type,index,'middleName')}}" auto-validate value="{{passenger.MiddleName}}"></t-input>
-                            <t-input label="Last" name$="{{_getName(passenger.type,index,'lastName')}}" error-message="Enter last name" required auto-validate value="{{passenger.LastName}}"></t-input>
+							<t-input label="Last" name$="{{_getName(passenger.type,index,'lastName')}}" error-message="You missed this." required auto-validate value="{{passenger.LastName}}"></t-input>
                         </div>
                         <div class="vertical-margin layout horizontal center">
                             <t-calendar is-dob name$="{{_getName(passenger.type,index,'dob')}}" required label="Date of birth" min="{{_getMinDate(passenger.type)}}" max="{{_getMaxDate(passenger.type)}}" format="mm/dd/yyyy" submit-format="mm/dd/yyyy" selected-date="{{passenger.DOB}}" error-message="Enter date of birth"></t-calendar>
@@ -139,6 +139,7 @@
             },
 
             _getName: function (type, index, value) {
+                var type = this._getType(type);
                 return type + index + '-' + value;
             },
 
