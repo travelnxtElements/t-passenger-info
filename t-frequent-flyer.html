@@ -1,8 +1,8 @@
 <!-- We are still creating this components -->
-<link rel="import" href="../../../bower_components/polymer/polymer.html" />
-<link rel="import" href="../../formComponents/t-dropdown-menu/t-dropdown-menu.html" />
-<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html" />
-<link rel="import" href="../../formComponents/t-section-header/t-section-header.html" />
+<link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="../t-dropdown-menu/t-dropdown-menu.html" />
+<link rel="import" href="../iron-ajax/iron-ajax.html" />
+<link rel="import" href="../t-section-header/t-section-header.html" />
 <dom-module id="t-frequent-flyer">
     <template>
         <style>
@@ -63,7 +63,7 @@
         }
         </style>
         <div class="layout vertical section">
-            <p class="header" on-click="_toggle">Other info (Frequent flyer #, Redress No.
+            <p class="header" on-click="_toggle">Other info (Frequent flyer #, Redress No.)
                 <iron-icon id="icon" icon="icons:arrow-drop-down"></iron-icon>
             </p>
             <div class="toggle-section">
@@ -151,7 +151,7 @@ Polymer({
             this.flightArr.forEach(function(item){
                 data.push(item.code);
             });
-            this.$.loyalty.body = data;
+            this.$.loyalty.body = JSON.stringify(data);
             console.log(this.$.loyalty.body);
             this.$.loyalty.generateRequest();
         }else{
