@@ -1,0 +1,163 @@
+<!-- We are still creating this components -->
+<link rel="import" href="../../../bower_components/polymer/polymer.html" />
+<link rel="import" href="../../formComponents/t-dropdown-menu/t-dropdown-menu.html" />
+<link rel="import" href="../../../bower_components/iron-ajax/iron-ajax.html" />
+<link rel="import" href="../../formComponents/t-section-header/t-section-header.html" />
+<dom-module id="t-frequent-flyer">
+    <template>
+        <style>
+        :host {
+            width: 100%;
+            -webkit-box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            box-sizing: border-box;
+            font-family: var(--primary-font-family, 'Open sans');
+            font-size: var(font-12, 12px);
+        }
+        
+        .header {
+            padding: 0;
+            margin: 10px 0 0;
+        }
+        
+        .section {
+            padding: 0 10px;
+        }
+        
+        .toggle-section {
+            -webkit-transition: 0.3s ease all;
+            -moz-transition: 0.3s ease all;
+            -ms-transition: 0.3s ease all;
+            -o-transition: 0.3s ease all;
+            transition: 0.3s ease all;
+            overflow: hidden;
+            max-height: 0;
+        }
+        
+        :host([toggled]) .toggle-section {
+            max-height: 1000px;
+        }
+        
+        :host([toggled]) #icon {
+            -webkit-transform: rotate(180deg);
+            -moz-transform: rotate(180deg);
+            -ms-transform: rotate(180deg);
+            -o-transform: rotate(180deg);
+            transform: rotate(180deg);
+        }
+        
+        .note {
+            color: var(--grey-three, #bbbbbb);
+            border-bottom: 1px solid;
+            border-color: var(--grey-three, #bbbbbb);
+            padding: 15px 0 5px;
+            margin-bottom: 5px;
+        }
+        
+        .sectionHeader {
+            padding: 5px 0;
+            border-bottom: 1px solid;
+            border-color: var(--grey-three, #bbbbbb);
+            margin: 10px 0;
+            font-weight: 600;
+        }
+        </style>
+        <div class="layout vertical section">
+            <p class="header" on-click="_toggle">Other info (Frequent flyer #, Redress No.
+                <iron-icon id="icon" icon="icons:arrow-drop-down"></iron-icon>
+            </p>
+            <div class="toggle-section">
+                <template is="dom-repeat" items="[[flightArr]]" as="item">
+                    <div class="sectionHeader">{{item.name}}</div>
+                    <t-dropdown-menu label="Program Name" id="programName" name="programName">
+                        <paper-menu class="dropdown-content" selected="0">
+                            <template is="dom-repeat" items="{{loyalty.result}}" as="item">
+                                <template is="dom-repeat" items="{{item.lstOfMembershipProvider}}" as="program">
+                                    <paper-item data-code$="{{program.code}}">
+                                        <span>{{program.code}}</span>
+                                        <span>&nbsp;-&nbsp;</span>
+                                        <span>{{item.name}}</span>
+                                    </paper-item>
+                                </template>
+                            </template>
+                        </paper-menu>
+                    </t-dropdown-menu>
+                    <t-input id="programNumber" name="programNumber" label="Program Number"></t-input>
+                </template>
+                <div class="note">
+                    We share program details with the airline, though we cannot guarantee point awards.
+                </div>
+                <t-input id="redressNumber" name="redressNumber" label="Redress Number"></t-input>
+            </div>
+        </div>
+        <iron-ajax id="loyalty" method="POST" verbose query-string="{{queryParam}}" url="{{url}}" content-type="application/json" last-response="{{loyalty}}">
+        </iron-ajax>
+    </template>
+</dom-module>
+<script>
+Polymer({
+    is: 't-frequent-flyer',
+
+    properties: {
+
+        url:{
+            type:String,
+            value:''
+        },
+
+        queryParam:{
+            type:String,
+            value:''
+        },
+
+        /**
+         * NodeList of all fields present in the form.
+         */
+        flightArr: {
+            type: Array,
+            value: [{
+                "name": "Air France",
+                "code": "AF"
+            }, {
+                "name": "KLM Royal Dutch",
+                "code": "KL"
+            }],
+            observer:'_callPrograms'
+        },
+
+        toggled: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+        },
+
+        loyalty: {
+            type: Array,
+            value: function() {
+                return [];
+            },
+            notify: true
+        }
+
+    },
+
+    _toggle: function() {
+        this.toggled = !this.toggled;
+    },
+
+    _callPrograms: function(){
+        if(this.flightArr!=null || this.flightArr.length != undefined){
+            var data = [];
+            this.flightArr.forEach(function(item){
+                data.push(item.code);
+            });
+            this.$.loyalty.body = data;
+            console.log(this.$.loyalty.body);
+            this.$.loyalty.generateRequest();
+        }else{
+            console.log("Pass value to flight array")
+        }
+    }
+
+});
+</script>
