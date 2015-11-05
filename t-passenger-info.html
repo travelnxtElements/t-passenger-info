@@ -116,6 +116,16 @@
             },
 
             _getLabel: function (type, index) { 
+                switch (type) {
+                    case 0:
+                        adultIndex++;break;
+                    case 1:
+                        childIndex++;break;
+                    case 2:
+                        seniorIndex++;break;
+                    case 3:
+                        infantIndex++;break;
+                }
                 type = this._getType(type);
                 return type;
             },
@@ -123,16 +133,12 @@
             _getType: function (type) {
                 switch (type) {
                     case 0:
-                        adultIndex++;
                         return "Adult" + " " + adultIndex;
                     case 1:
-                        childIndex++;
                         return "Child" + " " + childIndex;
                     case 2:
-                        seniorIndex++;
                         return "Senior" + " " + seniorIndex;
                     case 3:
-                        infantIndex++;
                         return "Infant" + " " + infantIndex;
                 }
                 return "";
