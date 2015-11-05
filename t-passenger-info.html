@@ -37,13 +37,20 @@ value: [{"GenderString":"Male","DOB":"11/04/2003","DisplayTravelerType":null,"Id
                 margin-bottom: 10px;
             }
 
-                .vertical-margin t-input {
-                    margin-right: 5px;
-                }
+            .vertical-margin t-input {
+                margin-right: 5px;
+            }
 
-                    .vertical-margin t-input:last-child {
-                        margin-right: 0;
-                    }
+            .vertical-margin t-input:last-child {
+                margin-right: 0;
+            }
+            
+            .suffix{
+                width: 20%;
+            }
+            .calendar{
+                margin-right: 5px;
+            }
             :host ::content input {
                 text-transform:capitalize;
             }
@@ -58,17 +65,21 @@ value: [{"GenderString":"Male","DOB":"11/04/2003","DisplayTravelerType":null,"Id
                     <t-section-header label="[[_getLabel(passenger.type,index)]]"></t-section-header>
                     <div class="section">
                         <div class="vertical-margin layout horizontal center">
-                            <t-input label="First" name$="{{_getName(passenger.type, index,'firstName')}}" error-message="You missed this." required auto-validate value="{{passenger.FirstName}}"></t-input>
-                            <t-input label="Middle" name$="{{_getName(passenger.type,index,'middleName')}}" auto-validate value="{{passenger.MiddleName}}"></t-input>
-							<t-input label="Last" name$="{{_getName(passenger.type,index,'lastName')}}" error-message="You missed this." required auto-validate value="{{passenger.LastName}}"></t-input>
+                            <t-input class="flex" label="First" name$="{{_getName(passenger.type, index,'firstName')}}" error-message="You missed this." required auto-validate value="{{passenger.FirstName}}"></t-input>
                         </div>
                         <div class="vertical-margin layout horizontal center">
-                            <t-calendar is-dob name$="{{_getName(passenger.type,index,'dob')}}" required label="Date of birth" min="{{_getMinDate(passenger.type)}}" max="{{_getMaxDate(passenger.type)}}" format="mm/dd/yyyy" submit-format="mm/dd/yyyy" selected-date="{{passenger.DOB}}" error-message="Enter date of birth"></t-calendar>
-                            <span class="flex"></span>
+                            <t-input class="flex" label="Middle" name$="{{_getName(passenger.type,index,'middleName')}}" auto-validate value="{{passenger.MiddleName}}"></t-input>
+                        </div>
+                        <div class="vertical-margin layout horizontal center">
+                                <t-input class="flex" label="Last" name$="{{_getName(passenger.type,index,'lastName')}}" error-message="You missed this." required auto-validate value="{{passenger.LastName}}"></t-input>
+                                <t-input class="suffix" label="Suffix" name$="{{_getName(passenger.type,index,'suffix')}}" error-message="You missed this." required auto-validate value="{{passenger.suffix}}"></t-input>
+                        </div>
+                        <div class="vertical-margin layout horizontal center center-justified">
+                            <t-calendar class="flex calendar"  is-dob name$="{{_getName(passenger.type,index,'dob')}}" required label="Date of birth" min="{{_getMinDate(passenger.type)}}" max="{{_getMaxDate(passenger.type)}}" format="mm/dd/yyyy" submit-format="mm/dd/yyyy" selected-date="{{passenger.DOB}}" error-message="Enter date of birth"></t-calendar>
                             <t-radio-group pill-button name$="{{_getName(passenger.type,index,'gender')}}" selected-item="[[passenger.Gender]]" data='["Male","Female"]'></t-radio-group>
                         </div>
                         <div class="vertical-margin layout">
-                            <content select=".content"></content>
+                            <t-frequent-flyer  url="http://demo.travelnxt.com/api/Flight/loyaltyprograms?token=34zd3w0r20cowwy3woxuhiaz"></t-frequent-flyer>
                         </div>
                     </div>
             </template>
@@ -112,9 +123,7 @@ value: [{"GenderString":"Male","DOB":"11/04/2003","DisplayTravelerType":null,"Id
 
                 passengerData: {
                     type: Array,
-                    value: function () {
-                        return new Date();
-                    },
+                    value: [{"GenderString":"Male","DOB":"11/04/2003","DisplayTravelerType":null,"Id":0,"type":0,"FirstName":"sasa","LastName":"sa","MiddleName":"sa","Suffix":null,"DateOfBirth":{"date":"Tue, 04 Nov, 2003","systemDateTime":"0001-01-01T00:00:00","time":"12:00 AM"},"Gender":0,"EmailId":"sasa@sasa","RedressNumber":"222222222222"},{"GenderString":"Male","DOB":"11/04/2003","DisplayTravelerType":null,"Id":1,"type":0,"FirstName":"sasa","LastName":"asa","MiddleName":"s","Suffix":null,"DateOfBirth":{"date":"Tue, 04 Nov, 2003","systemDateTime":"0001-01-01T00:00:00","time":"12:00 AM"},"Gender":0,"EmailId":null,"RedressNumber":null},{"GenderString":"Male","DOB":"11/03/2003","DisplayTravelerType":null,"Id":2,"type":0,"FirstName":"sasa","LastName":"sasa","MiddleName":"sasa","Suffix":null,"DateOfBirth":{"date":"Mon, 03 Nov, 2003","systemDateTime":"0001-01-01T00:00:00","time":"12:00 AM"},"Gender":0,"EmailId":null,"RedressNumber":null},{"GenderString":"Male","DOB":"11/04/2013","DisplayTravelerType":null,"Id":3,"type":1,"FirstName":"sasa","LastName":"as","MiddleName":"sa","Suffix":null,"DateOfBirth":{"date":"Mon, 04 Nov, 2013","systemDateTime":"0001-01-01T00:00:00","time":"12:00 AM"},"Gender":0,"EmailId":null,"RedressNumber":null},{"GenderString":"Male","DOB":"11/04/2013","DisplayTravelerType":null,"Id":4,"type":1,"FirstName":"sasa","LastName":"sasa","MiddleName":"sas","Suffix":null,"DateOfBirth":{"date":"Mon, 04 Nov, 2013","systemDateTime":"0001-01-01T00:00:00","time":"12:00 AM"},"Gender":0,"EmailId":null,"RedressNumber":null}],
                     notify: true
                 }
 
