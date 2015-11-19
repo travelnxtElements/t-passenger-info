@@ -48,7 +48,7 @@
         <t-notify hidden$="{{!errorBlock}}" type="error" id="notify" message="{{errorMessage}}"></t-notify>
         <div class="layout vertical">
             <template is="dom-repeat" items="[[passengerData]]" as="passenger">
-                <t-passenger-segment passenger-index="{{_getDisplayIndex(passenger.type)}}" passenger="{{passenger}}"></t-passenger-segment>
+                <t-passenger-segment passenger-index="{{_getDisplayIndex(passenger.Type)}}" passenger="{{passenger}}"></t-passenger-segment>
                 <div class="vertical-margin layout">
                     <t-frequent-flyer passenger-id="[[index]]" chosen-programs="[[passenger.optedPrograms]]" airline-list="[[airlineList]]" frequent-flyer-url="[[frequentFlyerUrl]]"></t-frequent-flyer>
                 </div>

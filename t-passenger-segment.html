@@ -43,21 +43,21 @@
             padding: 0 10px;
         }
         </style>
-        <t-section-header label="[[_getLabel(passenger.type, passengerIndex)]]"></t-section-header>
+        <t-section-header label="[[_getLabel(passenger.Type, passengerIndex)]]"></t-section-header>
         <div class="section">
             <div class="vertical-margin layout horizontal center">
-                <t-input id="firstName" class="flex" label="First" name$="{{_getName(passenger.type, 'firstName')}}" error-message="You missed this." required auto-validate value="{{passenger.FirstName}}"></t-input>
+                <t-input id="firstName" class="flex" label="First" name$="{{_getName(passenger.Type, 'firstName')}}" error-message="You missed this." required auto-validate value="{{passenger.FirstName}}"></t-input>
             </div>
             <div class="vertical-margin layout horizontal center">
-                <t-input id="middleName" class="flex" label="Middle" name$="{{_getName(passenger.type,'middleName')}}" auto-validate value="{{passenger.MiddleName}}"></t-input>
+                <t-input id="middleName" class="flex" label="Middle" name$="{{_getName(passenger.Type,'middleName')}}" auto-validate value="{{passenger.MiddleName}}"></t-input>
             </div>
             <div class="vertical-margin layout horizontal center">
-                <t-input id="lastName" class="flex" label="Last" name$="{{_getName(passenger.type,'lastName')}}" error-message="You missed this." required auto-validate value="{{passenger.LastName}}"></t-input>
-                <t-input id="suffix" class="suffix" label="Suffix" name$="{{_getName(passenger.type,'suffix')}}" error-message="You missed this." required auto-validate value="{{passenger.suffix}}"></t-input>
+                <t-input id="lastName" class="flex" label="Last" name$="{{_getName(passenger.Type,'lastName')}}" error-message="You missed this." required auto-validate value="{{passenger.LastName}}"></t-input>
+                <t-input id="suffix" class="suffix" label="Suffix" name$="{{_getName(passenger.Type,'suffix')}}" error-message="You missed this." required auto-validate value="{{passenger.Suffix}}"></t-input>
             </div>
             <div class="vertical-margin layout horizontal center center-justified">
-                <t-calendar id="dateOfBirth" class="flex calendar" is-dob name$="{{_getName(passenger.type,'dob')}}" required label="Date of birth" min="{{_getMinDate(passenger.type)}}" max="{{_getMaxDate(passenger.type)}}" format="mm/dd/yyyy" submit-format="mm/dd/yyyy" selected-date="{{passenger.DOB}}" error-message="Enter date of birth"></t-calendar>
-                <t-radio-group id="gender" pill-button name$="{{_getName(passenger.type,'gender')}}" selected-item="Male" data='["Male","Female"]'></t-radio-group>
+                <t-calendar id="dateOfBirth" class="flex calendar" is-dob name$="{{_getName(passenger.Type,'dob')}}" required label="Date of birth" min="{{_getMinDate(passenger.Type)}}" max="{{_getMaxDate(passenger.Type)}}" format="mm/dd/yyyy" submit-format="mm/dd/yyyy" selected-date="{{passenger.DOB}}" error-message="Enter date of birth"></t-calendar>
+                <t-radio-group id="gender" pill-button name$="{{_getName(passenger.Type,'gender')}}" selected-item="Male" data='["Male","Female"]'></t-radio-group>
             </div>
         </div>
     </template>
