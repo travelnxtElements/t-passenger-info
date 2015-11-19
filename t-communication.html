@@ -5,15 +5,16 @@
 <dom-module id="t-communication">
     <template>
         <style>
-			.section{
-				padding: 0 10px;
-			}
+        .section {
+            padding: 0 10px;
+        }
         </style>
         <div class="layout vertical">
             <t-section-header label="Communication details"></t-section-header>
             <div class="section">
-                <t-input id="phoneNumber" name="phoneNumber" label="Phone"  pattern="^[\d, ,(,),+,-]+" max-length="20" error-message="You missed this." required auto-validate value="{{phone}}" ></t-input>
-                <t-input id="email" name="email" label="Email" type="email" error-message="You missed this." auto-validate required value="{{email}}"></t-input>
+                <t-input id="phoneNumber" name="phoneNumber" label="Phone" pattern="^[\d, ,(,),+,-]+" max-length="20" error-message="You missed this." required auto-validate value="{{phone}}"></t-input>
+                <t-input id="email" name="email" label="Email" type="email" error-message="Invalid email." auto-validate required value="{{email}}"></t-input>
+                <t-input id="confirmEmail" name="confirmEmail" label="Confirm email" type="email" error-message="Emails don't match." auto-validate required value="{{confirmEmail}}"></t-input>
             </div>
         </div>
     </template>
@@ -26,20 +27,28 @@ Polymer({
     properties: {
 
         phone: {
-            type:String
+            type: String
         },
 
         email: {
-            type:String
+            type: String
+        },
+
+        confirmEmail: {
+            type: String
         }
 
     },
 
-    validate: function(){
+    validate: function() {
         var isValid = true;
         isValid = this.$.phoneNumber.validate() && isValid;
-        isValid = this.$.phoneNumber.validate() && isValid;
-
+        isValid = this.$.email.validate() && isValid;
+        isValid = this.$.confirmEmail.validate() && isValid;
+        if (this.confirmEmail !== this.email) {
+            this.$.confirmEmail.isInvalid = true;
+            isValid = false;
+        }
         return isValid;
     }
 });
