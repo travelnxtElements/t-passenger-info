@@ -79,7 +79,7 @@
                 }
             },
 
-            frequentFlyerUrl:String,
+            frequentFlyerUrl: String,
 
             frequentFlyerDetails: {
                 type: Array
@@ -101,7 +101,7 @@
             airlineList: {
                 type: Array,
                 notify: true,
-                observer:'_getLoyaltyPrograms'
+                observer: '_getLoyaltyPrograms'
             },
 
             passengerData: {
@@ -232,12 +232,18 @@
 
         _onLoyaltyResponse: function(response, airlineCode, airlineIndex) {
             var component = this;
+            var arrayIndex = -1;
+            this.airlineList.forEach(function(airline, index) {
+                if (airline.code.toLowerCase() === airlineCode.toLowerCase()) {
+                    arrayIndex = index;
+                    return;
+                }
+            });
             if (response.status.isSuccessful) {
-                this.airlineList.forEach(function(airline, index) {
-                    if (airline.code.toLowerCase() === airlineCode.toLowerCase()) {
-                        component.set('airlineList.' + index + '.programs', response.result);
-                    }
-                });
+                component.set('airlineList.' + arrayIndex + '.programs', response.result);
+            } else {
+                //remove airline from list if loyalty programs could not be fetched.
+                component.splice('airlineList',arrayIndex,1);
             }
             if (airlineIndex === this.airlineList.length - 1)
                 this._setChosenLoyaltyProgramsForPassengers();
@@ -248,10 +254,9 @@
                 var component = this;
 
                 this.passengerData.forEach(function(passenger, paxId) {
-                    var chosenPrograms =[];
-                     component.frequentFlyerDetails.forEach(function(ff) {
-                        if(ff.paxId === paxId)
-                        {
+                    var chosenPrograms = [];
+                    component.frequentFlyerDetails.forEach(function(ff) {
+                        if (ff.paxId === paxId) {
                             ff.redressNumber = component.passengerData[paxId].RedressNumber;
                             chosenPrograms.push(ff);
                         }
@@ -268,45 +273,42 @@
             var segments = [].slice.call(this.querySelectorAll('t-passenger-segment'));
             var frequentFlyerElements = [].slice.call(this.querySelectorAll('t-frequent-flyer'));
 
-            var validationFailed= false;
+            var validationFailed = false;
             var passengerDetails = [];
-            segments.forEach(function(segment){
-                var paxDetails=  segment.getPassengerDetails();
-                if(paxDetails === null)
-                {
+            segments.forEach(function(segment) {
+                var paxDetails = segment.getPassengerDetails();
+                if (paxDetails === null) {
                     validationFailed = true;
-                }
-                else{
+                } else {
                     passengerDetails.push(paxDetails);
-                }   
+                }
             });
 
-            var frequentFlyerDetails= [];
-            frequentFlyerElements.forEach(function(ff){
+            var frequentFlyerDetails = [];
+            frequentFlyerElements.forEach(function(ff) {
                 var programs = ff.getOptedPrograms();
-                if(programs!== undefined && programs.length>0)
-                    frequentFlyerDetails= frequentFlyerDetails.concat(programs);
+                if (programs !== undefined && programs.length > 0)
+                    frequentFlyerDetails = frequentFlyerDetails.concat(programs);
             });
 
             var paxDetailsWithFF = this._handleRedressNumbers(passengerDetails, frequentFlyerDetails);
 
-            if(!validationFailed)
-                this.fire('passenger-details-submit',paxDetailsWithFF);
+            if (!validationFailed)
+                this.fire('passenger-details-submit', paxDetailsWithFF);
 
         },
 
-        _handleRedressNumbers: function(paxDetails, ffDetails){
-            ffDetails.forEach(function(detail,index){
-                if(detail.redressNumber !== undefined && detail.redressNumber.length >0)
-                {
-                    paxDetails[detail.paxId].RedressNumber =  detail.redressNumber;
+        _handleRedressNumbers: function(paxDetails, ffDetails) {
+            ffDetails.forEach(function(detail, index) {
+                if (detail.redressNumber !== undefined && detail.redressNumber.length > 0) {
+                    paxDetails[detail.paxId].RedressNumber = detail.redressNumber;
                     delete detail['redressNumber'];
                 }
             });
 
             var completeDetails = {
-                'passengerDetails':paxDetails,
-                'frequentFlyerDetails':ffDetails
+                'passengerDetails': paxDetails,
+                'frequentFlyerDetails': ffDetails
             };
             return completeDetails;
         }
