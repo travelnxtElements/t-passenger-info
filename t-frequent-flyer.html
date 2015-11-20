@@ -68,7 +68,7 @@
                         <paper-menu class="dropdown-content" selected="0">
                             <template is="dom-repeat" items="{{airline.programs}}" as="program">
                                 <template is="dom-repeat" items="[[program.lstOfMembershipProvider]]" as="provider">
-                                    <paper-item data-name$="[[provider.name]]" data-code$="[[provider.code]]">
+                                    <paper-item data-name$="[[program.name]]" data-code$="[[provider.code]]">
                                         <span>[[provider.code]]</span>
                                         <span>&nbsp;-&nbsp;</span>
                                         <span>[[program.name]]</span>
