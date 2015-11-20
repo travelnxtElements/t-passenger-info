@@ -79,7 +79,7 @@
                     </t-dropdown-menu>
                     <t-input name="programNumber" data-code$="[[airline.code]]" label="Program Number"></t-input>
                 </template>
-                <div class="note">
+                <div class="note" hidden$="[[_isEmpty(airlineList)]]">
                     We share program details with the airline, though we cannot guarantee point awards.
                 </div>
                 <t-input id="redressNumber" name="redressNumber" label="Redress Number"></t-input>
@@ -88,106 +88,110 @@
     </template>
 </dom-module>
 <script>
-Polymer({
+    Polymer({
 
-    is: 't-frequent-flyer',
+        is: 't-frequent-flyer',
 
-    properties: {
+        properties: {
 
-        toggled: {
-            type: Boolean,
-            value: false,
-            reflectToAttribute: true
-        },
-
-        airlineList: {
-            type: Array,
-            value: function() {
-                return [];
+            toggled: {
+                type: Boolean,
+                value: false,
+                reflectToAttribute: true
             },
-            notify: true
+
+            airlineList: {
+                type: Array,
+                value: function () {
+                    return [];
+                },
+                notify: true
+            },
+
+            chosenPrograms: {
+                type: Array
+            },
+
+            passengerId: String,
+
+
         },
 
-        chosenPrograms: {
-            type: Array
+        ready: function () {
+            var component = this;
+            document.addEventListener('ff-programs-retrieved', function () {
+                setTimeout(function () {
+
+                    component.prefillSelectedPrograms();
+                }, 0);
+            });
         },
 
-        passengerId: String,
+        _toggle: function () {
+            this.toggled = !this.toggled;
+        },
 
+        _isEmpty: function (airlineList) {
+            return this.airlineList.length > 0;
+        },
 
-    },
+        prefillSelectedPrograms: function () {
+            var component = this;
+            this.chosenPrograms.forEach(function (program) {
+                var ffElements = component.querySelectorAll('[data-code=' + program.airlineCode + ']');
+                var ffArray = [].slice.call(ffElements);
+                ffArray.forEach(function (element) {
+                    if (element.tagName.toLowerCase() == 't-dropdown-menu') {
+                        var items = [].slice.call(element.querySelectorAll('paper-item'));
+                        items.forEach(function (item, index) {
+                            if (item.getAttribute('data-code').toLowerCase() == program.loyaltyProgramCode.toLowerCase()) {
+                                var menu = element.querySelector('paper-menu');
+                                menu.selected = index;
+                            }
+                        });
+                    } else {
+                        element.value = program.frequentFlyerNumber;
+                    }
+                });
+            });
+            this.$.redressNumber.value = this.chosenPrograms[0].redressNumber;
+        },
 
-    ready: function() {
-        var component = this;
-        document.addEventListener('ff-programs-retrieved', function() {
-            setTimeout(function() {
-
-                component.prefillSelectedPrograms();
-            }, 0);
-        });
-    },
-
-    _toggle: function() {
-        this.toggled = !this.toggled;
-    },
-
-    prefillSelectedPrograms: function() {
-        var component = this;
-        this.chosenPrograms.forEach(function(program) {
-            var ffElements = component.querySelectorAll('[data-code=' + program.airlineCode + ']');
-            var ffArray = [].slice.call(ffElements);
-            ffArray.forEach(function(element) {
-                if (element.tagName.toLowerCase() == 't-dropdown-menu') {
-                    var items = [].slice.call(element.querySelectorAll('paper-item'));
-                    items.forEach(function(item, index) {
-                        if (item.getAttribute('data-code').toLowerCase() == program.loyaltyProgramCode.toLowerCase()) {
-                            var menu = element.querySelector('paper-menu');
-                            menu.selected = index;
-                        }
-                    });
-                } else {
-                    element.value = program.frequentFlyerNumber;
+        getOptedPrograms: function () {
+            var component = this;
+            var chosenPrograms = [];
+            this.airlineList.forEach(function (airline, index) {
+                var ffInput = component.querySelector('t-input[data-code=' + airline.code + ']');
+                var ffDropdown = component.querySelector('t-dropdown-menu[data-code=' + airline.code + ']');;
+                var redressInput = component.$.redressNumber;
+                if (ffInput.value !== undefined && ffInput.value.length > 0) {
+                    var program = {
+                        id: component._getUniqueCode(),
+                        paxId: component.passengerId,
+                        airlineCode: airline.code,
+                        loyaltyProgramCode: ffDropdown.selectedItem.getAttribute('data-code'),
+                        loyaltyProgramName: ffDropdown.selectedItem.getAttribute('data-name'),
+                        frequentFlyerNumber: ffInput.value,
+                        redressNumber: redressInput.value
+                    };
+                    chosenPrograms.push(program);
                 }
             });
-        });
-        this.$.redressNumber.value = this.chosenPrograms[0].redressNumber;
-    },
-
-    getOptedPrograms: function() {
-        var component = this;
-        var chosenPrograms = [];
-        this.airlineList.forEach(function(airline, index) {
-            var ffInput = component.querySelector('t-input[data-code=' + airline.code + ']');
-            var ffDropdown = component.querySelector('t-dropdown-menu[data-code=' + airline.code + ']');;
-            var redressInput = component.$.redressNumber;
-            if (ffInput.value !== undefined && ffInput.value.length > 0) {
-                var program = {
-                    id: component._getUniqueCode(),
-                    paxId: component.passengerId,
-                    airlineCode: airline.code,
-                    loyaltyProgramCode: ffDropdown.selectedItem.getAttribute('data-code'),
-                    loyaltyProgramName: ffDropdown.selectedItem.getAttribute('data-name'),
-                    frequentFlyerNumber: ffInput.value,
-                    redressNumber: redressInput.value
-                };
-                chosenPrograms.push(program);
-            }
-        });
-        return chosenPrograms;
-    },
+            return chosenPrograms;
+        },
 
 
-    _getUniqueCode: function() {
-        var id = "";
-        var now = new Date();
-        id += now.getDate();
-        id += now.getHours();
-        id += now.getMinutes();
-        id += now.getSeconds();
-        id += now.getMilliseconds();
-        return id;
-    }
+        _getUniqueCode: function () {
+            var id = "";
+            var now = new Date();
+            id += now.getDate();
+            id += now.getHours();
+            id += now.getMinutes();
+            id += now.getSeconds();
+            id += now.getMilliseconds();
+            return id;
+        }
 
 
-});
+    });
 </script>
