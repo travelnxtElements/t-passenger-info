@@ -73,11 +73,7 @@
                         <paper-menu class="dropdown-content" selected="0">
                             <template is="dom-repeat" items="{{airline.programs}}" as="program">
                                 <template is="dom-repeat" items="[[program.lstOfMembershipProvider]]" as="provider">
-                                    <paper-item data-name$="[[program.name]]" data-code$="[[provider.code]]">
-                                        <span>[[provider.code]]</span>
-                                        <span>&nbsp;-&nbsp;</span>
-                                        <span>[[program.name]]</span>
-                                    </paper-item>
+                                    <paper-item data-name$="[[program.name]]" data-code$="[[provider.code]]">{{_getItemName(provider.code,program.name)}}</paper-item>
                                 </template>
                             </template>
                         </paper-menu>
@@ -130,6 +126,10 @@
                     component.prefillSelectedPrograms();
                 }, 0);
             });
+        },
+
+        _getItemName:function(code,name){
+            return code + " - " + name;
         },
 
         _toggle: function () {
