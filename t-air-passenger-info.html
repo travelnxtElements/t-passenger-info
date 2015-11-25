@@ -299,7 +299,7 @@
 
         _handleRedressNumbers: function(paxDetails, ffDetails) {
             ffDetails.forEach(function(detail, index) {
-                if (detail.redressNumber !== undefined && detail.redressNumber.length > 0) {
+                if (detail.redressNumber && detail.redressNumber.length > 0) {
                     paxDetails[detail.paxId].RedressNumber = detail.redressNumber;
                     delete detail['redressNumber'];
                 }

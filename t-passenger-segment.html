@@ -159,7 +159,7 @@
                     'suffix': this.$.suffix.value,
                     'dob': this.$.dateOfBirth.selectedDate,
                     'gender': this.$.gender.selectedItem,
-
+                    'type': this._getType(this.passenger.Type)
                 };
                 return passengerDetails;
             }
