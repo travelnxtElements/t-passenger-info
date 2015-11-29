@@ -1,4 +1,4 @@
-<link rel="import" href="../t-air-passenger-info.html">
+<link rel="import" href="../t-passenger-info-list.html">
 <link rel="import" href="../t-communication.html">
 <style>
 	body{
@@ -6,6 +6,14 @@
 	}
 </style>
 
-<t-air-passenger-info>
-</t-air-passenger-info>
-	<!-- <t-communication></t-communication> -->
+<t-passenger-info-list >
+</t-passenger-info-list>
+<t-communication>
+</t-communication>
+
+<script type="text/javascript">
+
+var paxListNode = document.querySelector('t-passenger-info-list');
+paxListNode.data = [{type:'Adult', gender:'Male'},{type:'Child', gender:'Male'}, {type:'Infant', gender:'Female'}, {type:'Senior', gender:'Female'}];
+
+</script>
