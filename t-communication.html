@@ -16,7 +16,7 @@
             <t-section-header label="Communication details"></t-section-header>
             <div class="section">
                 <t-input id="phoneNumber" name="phoneNumber" prevent-invalid-input label="Phone" pattern="^[\d, ,(,),+,-]+" max-length="20" error-message="You missed this." required auto-validate value="{{phone}}"></t-input>
-                <t-input id="email" name="email" label="Email" pattern="^[a-zA-Z0-9.!#$%&â€™*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(.[a-zA-Z0-9-]+)+$" error-message="Invalid email." auto-validate required value="{{email}}"></t-input>
+                <t-input id="email" name="email" label="Email" pattern="^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(.[a-zA-Z0-9-]+)+$" error-message="Invalid email." auto-validate required value="{{email}}"></t-input>
             </div>
         </div>
     </template>
