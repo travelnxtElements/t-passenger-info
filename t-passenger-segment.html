@@ -132,7 +132,10 @@
         },
 
         validate: function() {
-            return this.$.firstName.validate() && this.$.lastName.validate()  && this.$.dateOfBirth.validate();
+            var isValid = this.$.firstName.validate() ;
+            isValid = this.$.lastName.validate() && isValid ;
+            isValid = this.$.dateOfBirth.validate() && isValid ;
+            return isValid;
         }
     });
 })();
