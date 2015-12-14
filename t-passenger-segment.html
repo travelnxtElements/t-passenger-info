@@ -46,16 +46,24 @@
             <div class="vertical-margin layout horizontal center">
                 <t-input id="firstName" class="flex" label="First"  error-message="You missed this." required auto-validate value="{{firstName}}"></t-input>
             </div>
-            <div class="vertical-margin layout horizontal center">
-                <t-input id="middleName" class="flex" label="Middle" auto-validate value="{{middleName}}"></t-input>
-            </div>
+            <template is="dom-if" if=[[!hideMiddleName]]>
+                <div class="vertical-margin layout horizontal center">
+                    <t-input id="middleName" class="flex" label="Middle" auto-validate value="{{middleName}}"></t-input>
+                </div>
+            </template>
             <div class="vertical-margin layout horizontal center">
                 <t-input id="lastName" class="flex" label="Last" error-message="You missed this." required auto-validate value="{{lastName}}"></t-input>
-                <t-input id="suffix" class="suffix" label="Suffix" error-message="You missed this." required auto-validate value="{{suffix}}"></t-input>
+                <template is="dom-if" if=[[!hideSuffix]]>
+                    <t-input id="suffix" class="suffix" label="Suffix" error-message="You missed this." required auto-validate value="{{suffix}}"></t-input>
+                </template>
             </div>
             <div class="vertical-margin layout horizontal center center-justified">
-                <t-calendar id="dateOfBirth" class="flex calendar" is-dob required label="Date of birth" min="{{_getMinDate(type)}}" max="{{_getMaxDate(type)}}" format="mm/dd/yyyy" submit-format="mm/dd/yyyy" selected-date="{{dateOfBirth}}" error-message="Enter date of birth"></t-calendar>
-                <t-radio-group id="gender" pill-button selected-item="{{gender}}" data='["Male","Female"]'></t-radio-group>
+                <template is="dom-if" if=[[!hideDateOfBirth]]>
+                    <t-calendar id="dateOfBirth" class="flex calendar" is-dob required label="Date of birth" min="{{_getMinDate(type)}}" max="{{_getMaxDate(type)}}" format="mm/dd/yyyy" submit-format="mm/dd/yyyy" selected-date="{{dateOfBirth}}" error-message="Enter date of birth"></t-calendar>
+                </template>
+                <template is="dom-if" if=[[!hideGender]]>
+                    <t-radio-group id="gender" pill-button selected-item="{{gender}}" data='["Male","Female"]'></t-radio-group>
+                </template>
             </div>
         </div>
     </template>
@@ -104,12 +112,40 @@
             type: {
                 type: 'String',
                 notify: true
-            }
+            },
+
+            hideMiddleName: {
+                type: Boolean,
+                value: false
+            },
+
+            hideSuffix: {
+                type: Boolean,
+                value: false
+            },
+
+            hideDateOfBirth: {
+                type: Boolean,
+                value: false
+            },
+
+            hideGender: {
+                type: Boolean,
+                value: false
+            },
+
 
         },
 
         ready: function() {
             this._setCalendar();
+        },
+
+        attached: function(){
+            this.hideMiddleName = !(!this.hideMiddleName);
+            this.hideSuffix = !(!this.hideSuffix);
+            this.hideDateOfBirth = !(!this.hideDateOfBirth);
+            this.hideGender = !(!this.hideGender);
         },
         
         _setCalendar: function() {
@@ -134,7 +170,9 @@
         validate: function() {
             var isValid = this.$.firstName.validate() ;
             isValid = this.$.lastName.validate() && isValid ;
-            isValid = this.$.dateOfBirth.validate() && isValid ;
+            if(!this.hideDateOfBirth){
+                isValid = this.$.dateOfBirth.validate() && isValid ;
+            }
             return isValid;
         }
     });

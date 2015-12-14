@@ -44,7 +44,8 @@
         <div class="layout vertical">
             <template is="dom-repeat" items="{{data}}" as="passenger">
                 <t-section-header label="{{_getHeaderText(passenger.type)}}"></t-section-header>
-                <t-passenger-segment first-name="{{passenger.firstName}}" middle-name="{{passenger.middleName}}" last-name="{{passenger.lastName}}" gender="{{passenger.gender}}" suffix="{{passenger.suffix}}" date-of-birth="{{passenger.dateOfBirth}}" type="{{passenger.type}}"></t-passenger-segment>
+                <t-passenger-segment first-name="{{passenger.firstName}}" middle-name="{{passenger.middleName}}" last-name="{{passenger.lastName}}" gender="{{passenger.gender}}" suffix="{{passenger.suffix}}" date-of-birth="{{passenger.dateOfBirth}}" type="{{passenger.type}}" 
+                hide-middle-name="[[passenger.hideMiddleName]]" hide-suffix="[[passenger.hideSuffix]]" hide-date-of-birth="[[passenger.hideDateOfBirth]]" hide-gender="[[passenger.hideGender]]"></t-passenger-segment>
             </template>
         </div>        
         </div>
