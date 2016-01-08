@@ -43,15 +43,15 @@
     <template>       
         <div class="section">
             <div class="vertical-margin layout horizontal center">
-                <t-input id="firstName" class="flex" label="First"  error-message="You missed this." required auto-validate value="{{firstName}}"></t-input>
+                <t-input id="firstName" class="flex" label="First Name"  error-message="You missed this." required auto-validate value="{{firstName}}"></t-input>
             </div>
             <template is="dom-if" if=[[!hideMiddleName]]>
                 <div class="vertical-margin layout horizontal center">
-                    <t-input id="middleName" class="flex" label="Middle" auto-validate value="{{middleName}}"></t-input>
+                    <t-input id="middleName" class="flex" label="Middle Name" auto-validate value="{{middleName}}"></t-input>
                 </div>
             </template>
             <div class="vertical-margin layout horizontal center">
-                <t-input id="lastName" class="flex" label="Last" error-message="You missed this." required auto-validate value="{{lastName}}"></t-input>
+                <t-input id="lastName" class="flex" label="Last Name" error-message="You missed this." required auto-validate value="{{lastName}}"></t-input>
                 <template is="dom-if" if=[[!hideSuffix]]>
                     <t-input id="suffix" class="suffix" label="Suffix" error-message="You missed this." required auto-validate value="{{suffix}}"></t-input>
                 </template>
