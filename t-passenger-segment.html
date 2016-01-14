@@ -163,9 +163,18 @@
             }
         },
 
-        _getMaxDate: function(type) {
-            return new Date();
-        },
+        _getMaxDate: function (type) {
+                var date = new Date();
+                switch (type) {
+                    case 0:
+                        return new Date(date.setFullYear(date.getFullYear() - 12));
+                    case 1:
+                        return new Date(date.setFullYear(date.getFullYear() - 2));
+                    default:
+                        return new Date();
+
+                }
+            },
 
         validate: function() {
             var isValid = this.$.firstName.validate() ;
