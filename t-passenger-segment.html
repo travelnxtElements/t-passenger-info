@@ -165,10 +165,10 @@
 
         _getMaxDate: function (type) {
                 var date = new Date();
-                switch (type) {
-                    case 0:
+                switch (type.toLowerCase()) {
+                    case 'adult':
                         return new Date(date.setFullYear(date.getFullYear() - 12));
-                    case 1:
+                    case 'child':
                         return new Date(date.setFullYear(date.getFullYear() - 2));
                     default:
                         return new Date();
