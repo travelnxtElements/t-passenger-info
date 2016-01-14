@@ -50,7 +50,7 @@
         <div class="layout vertical">
             <template is="dom-repeat" items="[[passengerData]]" as="passenger">
                 <t-section-header label="{{_getPaxHeader(passenger.Type)}}"></t-section-header>
-                <t-passenger-segment first-name="{{passenger.FirstName}}" last-name="{{passenger.LastName}}" type="{{_getType(ppassenger.DisplayTravelerType)}}"  gender="{{passenger.GenderString}}" suffix="{{passenger.Suffix}}" date-of-birth="{{passenger.DOB}}"
+                <t-passenger-segment first-name="{{passenger.FirstName}}" middle-name="{{passenger.MiddleName}}" last-name="{{passenger.LastName}}" type="{{_getType(passenger.Type)}}"  gender="{{passenger.GenderString}}" suffix="{{passenger.Suffix}}" date-of-birth="{{passenger.DOB}}"
                 ></t-passenger-segment>
                 <div class="vertical-margin layout">
                     <t-frequent-flyer passenger-id="[[index]]" chosen-programs="[[passenger.optedPrograms]]" airline-list="[[airlineList]]" frequent-flyer-url="[[frequentFlyerUrl]]"></t-frequent-flyer>
@@ -143,7 +143,7 @@
             _getType: function (type) {
                 switch (type) {
                     case 0:
-                        return "Adult" ;
+                        return "Adult";
                     case 1:
                         return "Child";
                     case 2:
@@ -308,7 +308,7 @@
             },
 
             getPassengerDetailForSegment: function (segment) {
-                var passengerDetails ={
+                var passengerDetails = {
                     'firstName': segment.firstName,
                     'middleName': segment.middleName,
                     'lastName': segment.lastName,
