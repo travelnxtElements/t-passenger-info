@@ -334,6 +334,16 @@
                     'frequentFlyerDetails': ffDetails
                 };
                 return completeDetails;
+            },
+
+            validate: function() {
+                var all = Polymer.dom(this.root).querySelectorAll('t-passenger-segment'),
+                isValid = true;
+                console.log(all);
+                all.forEach(function(element, index){
+                    isValid = element.validate() && isValid;
+                });
+                return isValid;
             }
         });
     })();
