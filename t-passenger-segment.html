@@ -55,7 +55,7 @@
             <div class="vertical-margin layout horizontal center">
                 <t-input id="lastName" class="flex" label="Last Name" error-message="You missed this." required auto-validate value="{{lastName}}"></t-input>
                 <template is="dom-if" if=[[!hideSuffix]]>
-                    <t-input id="suffix" class="suffix" label="Suffix" error-message="You missed this." required auto-validate value="{{suffix}}"></t-input>
+                    <t-input id="suffix" class="suffix" label="Suffix" value="{{suffix}}"></t-input>
                 </template>
             </div>
             <div class="vertical-margin layout horizontal center center-justified">
