@@ -6,6 +6,19 @@
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
 <link rel="import" href="../iron-ajax/iron-request.html">
 <!--
+    t-air-passenger-info is a polymer component that generates a passenger details form.
+    This comoponent repeats the passenger segment form for each passenger
+
+    `<t-air-passenger-info 
+        id="passengerInfo"
+        frequent-flyer-url="@ViewBag.LoyaltyProgramsUrl"
+        frequent-flyer-details="{{frequentFlyerDetails}}"
+        airline-list="[[airlineList]]"
+        passenger-data="[[passengerData]]"
+        departure-date="[[departureDate]]"
+        on-passenger-details-submit="formSubmit"
+        >
+    </t-air-passenger-info>`    
 -->
 <dom-module id="t-air-passenger-info">
     <template>
@@ -50,8 +63,7 @@
         <div class="layout vertical">
             <template is="dom-repeat" items="[[passengerData]]" as="passenger">
                 <t-section-header label="{{_getPaxHeader(passenger.Type)}}"></t-section-header>
-                <t-passenger-segment first-name="{{passenger.FirstName}}" middle-name="{{passenger.MiddleName}}" last-name="{{passenger.LastName}}" type="{{_getType(passenger.Type)}}"  gender="{{passenger.GenderString}}" suffix="{{passenger.Suffix}}" date-of-birth="{{passenger.DOB}}"
-                ></t-passenger-segment>
+                <t-passenger-segment first-name="{{passenger.FirstName}}" middle-name="{{passenger.MiddleName}}" last-name="{{passenger.LastName}}" type="{{_getType(passenger.Type)}}"  gender="{{passenger.GenderString}}" suffix="{{passenger.Suffix}}" date-of-birth="{{passenger.DOB}}"></t-passenger-segment>
                 <div class="vertical-margin layout">
                     <t-frequent-flyer passenger-id="[[index]]" chosen-programs="[[passenger.optedPrograms]]" airline-list="[[airlineList]]" frequent-flyer-url="[[frequentFlyerUrl]]"></t-frequent-flyer>
                 </div>
@@ -72,8 +84,9 @@
             is: 't-air-passenger-info',
 
             properties: {
+
                 /**
-                 * Response object of the form.
+                 * The total Response object of the form.
                  */
                 response: {
                     type: Object,
@@ -82,12 +95,21 @@
                     }
                 },
 
+                /**
+                 * The api URL to hit for frequent flyer API
+                 */
                 frequentFlyerUrl: String,
 
+                /**
+                 * Response object of the form for frequent flyers details.
+                 */
                 frequentFlyerDetails: {
                     type: Array
                 },
 
+                /**
+                 * Provide the departure date object of the journey to the component
+                 */
                 departureDate: {
                     type: Object,
                     notify: true,
@@ -101,21 +123,23 @@
                     value: 'application/json'
                 },
 
+                /**
+                 * Pass the array of unique airlines in the Journey
+                 */
                 airlineList: {
                     type: Array,
                     notify: true,
                     observer: '_getLoyaltyPrograms'
                 },
 
+                /**
+                 * Pass the array of all passengers object in the Journey
+                 */
                 passengerData: {
                     type: Array,
                     notify: true
                 }
 
-            },
-
-            ready: function () {
-                this._setCalendar();
             },
 
             _getPaxHeader: function (type) {
@@ -159,9 +183,6 @@
                 return type + index + '-' + value;
             },
 
-            _setCalendar: function () {
-                var calArr = Polymer.dom(this.root).querySelectorAll('t-calendar');
-            },
 
             _getMinDate: function (type) {
                 var date = new Date();
@@ -277,6 +298,38 @@
 
             },
 
+            _handleRedressNumbers: function (paxDetails, ffDetails) {
+                ffDetails.forEach(function (detail, index) {
+                    if (detail.redressNumber && detail.redressNumber.length > 0) {
+                        paxDetails[detail.paxId].RedressNumber = detail.redressNumber;
+                        delete detail['redressNumber'];
+                    }
+                });
+
+                var completeDetails = {
+                    'passengerDetails': paxDetails,
+                    'frequentFlyerDetails': ffDetails
+                };
+                return completeDetails;
+            },
+
+            getPassengerDetailForSegment: function (segment) {
+                var passengerDetails = {
+                    'firstName': segment.firstName,
+                    'middleName': segment.middleName,
+                    'lastName': segment.lastName,
+                    'suffix': segment.suffix,
+                    'dob': segment.dateOfBirth,
+                    'gender': segment.gender,
+                    'type': segment.type
+                };
+
+                return passengerDetails;
+            },
+
+            /**
+             * This methods returns the object of all passenger information of the current form.
+             */
             getPassengerDetails: function () {
                 var segments = [].slice.call(this.querySelectorAll('t-passenger-segment'));
                 var frequentFlyerElements = [].slice.call(this.querySelectorAll('t-frequent-flyer'));
@@ -307,39 +360,12 @@
 
             },
 
-            getPassengerDetailForSegment: function (segment) {
-                var passengerDetails = {
-                    'firstName': segment.firstName,
-                    'middleName': segment.middleName,
-                    'lastName': segment.lastName,
-                    'suffix': segment.suffix,
-                    'dob': segment.dateOfBirth,
-                    'gender': segment.gender,
-                    'type': segment.type
-                };
-
-                return passengerDetails;
-            },
-
-            _handleRedressNumbers: function (paxDetails, ffDetails) {
-                ffDetails.forEach(function (detail, index) {
-                    if (detail.redressNumber && detail.redressNumber.length > 0) {
-                        paxDetails[detail.paxId].RedressNumber = detail.redressNumber;
-                        delete detail['redressNumber'];
-                    }
-                });
-
-                var completeDetails = {
-                    'passengerDetails': paxDetails,
-                    'frequentFlyerDetails': ffDetails
-                };
-                return completeDetails;
-            },
-
+            /**
+             * This methods validates all passenger segement form of the component
+             */
             validate: function() {
                 var all = Polymer.dom(this.root).querySelectorAll('t-passenger-segment'),
                 isValid = true;
-                console.log(all);
                 all.forEach(function(element, index){
                     isValid = element.validate() && isValid;
                 });

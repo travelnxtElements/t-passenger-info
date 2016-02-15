@@ -2,7 +2,12 @@
 <link rel="import" href="../t-calendar/t-calendar.html">
 <link rel="import" href="../t-input/t-input.html">
 <link rel="import" href="../t-radio-group/t-radio-group.html">
-
+<!--
+    t-passenger-segment is a polymer component that generates a passenger details form.
+    The comoponent includes properties to hide all the input fields except first name and last name.
+    You can set and get values of each field with exposed list of properties
+    `<t-passenger-segment first-name="{{passenger.FirstName}}" middle-name="{{passenger.MiddleName}}" last-name="{{passenger.LastName}}" type="{{_getType(passenger.Type)}}"  gender="{{passenger.GenderString}}" suffix="{{passenger.Suffix}}" date-of-birth="{{passenger.DOB}}"></t-passenger-segment>`    
+-->
 <dom-module id="t-passenger-segment">
     <style>
         :host {
@@ -77,67 +82,99 @@
 
         properties: {
 
+            /**
+             * Set or get the firstName of the form.
+             */
             firstName: {
                 type: 'String',
                 notify: true
             },
 
+            /**
+             * Set or get the middleName of the form.
+             */
             middleName: {
                 type: 'String',
                 notify: true
             },
 
+            /**
+             * Set or get the lastName of the form.
+             */
             lastName: {
                 type: 'String',
                 notify: true
             },
 
+            /**
+             * Set or get the suffix of the form.
+             */
             suffix: {
                 type: 'String',
                 notify: true
             },
 
+            /**
+             * Set or get the dateOfBirth of the form.
+             */
             dateOfBirth: {
                 type: 'String',
                 notify: true
             },
 
-            /*allowed types(case sensitive): Male/Female */
+            /**
+             * Set or get the gender of the form.
+             * allowed types(case sensitive): Male/Female 
+             */
             gender: {
                 type: String,
                 value: 'Male',
                 notify: true
             },
 
-            /*allowed types(case sensitive): Adult/Child/Infant/Senior */
+            /**
+             * Response object of the form for frequent flyers details.
+             * allowed types(case sensitive): Adult/Child/Infant/Senior
+             */
             type: {
                 type: 'String',
                 notify: true
             },
 
+            /**
+             * Pass true to hide MiddleName
+             */
             hideMiddleName: {
                 type: Boolean,
                 value: false
             },
 
+            /**
+             * Pass true to hide Suffix
+             */
             hideSuffix: {
                 type: Boolean,
                 value: false
             },
 
+            /**
+             * Pass true to hide DateOfBirth
+             */
             hideDateOfBirth: {
                 type: Boolean,
                 value: false
             },
 
+            /**
+             * Pass true to hide Gender
+             */
             hideGender: {
                 type: Boolean,
                 value: false
             },
 
-
         },
-
+        
         ready: function() {
             this._setCalendar();
         },
@@ -177,6 +214,9 @@
                 }
             },
 
+        /**
+         * This methods validates all required fields of the component
+         */
         validate: function() {
             var all = Polymer.dom(this.root).querySelectorAll('[required]'),
             isValid = true;
