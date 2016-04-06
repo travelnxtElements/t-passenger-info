@@ -2,6 +2,7 @@
 <link rel="import" href="../t-calendar/t-calendar.html">
 <link rel="import" href="../t-input/t-input.html">
 <link rel="import" href="../t-radio-group/t-radio-group.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
 <!--
     t-passenger-segment is a polymer component that generates a passenger details form.
     The comoponent includes properties to hide all the input fields except first name and last name.
@@ -9,7 +10,8 @@
     `<t-passenger-segment first-name="{{passenger.FirstName}}" middle-name="{{passenger.MiddleName}}" last-name="{{passenger.LastName}}" type="{{_getType(passenger.Type)}}"  gender="{{passenger.GenderString}}" suffix="{{passenger.Suffix}}" date-of-birth="{{passenger.DOB}}"></t-passenger-segment>`    
 -->
 <dom-module id="t-passenger-segment">
-    <style>
+    <template>    
+    <style include="iron-flex">
         :host {
             width: 100%;
             -webkit-box-sizing: border-box;
@@ -46,8 +48,7 @@
         .section {
             padding: 0 10px;
         }
-        </style>
-    <template>       
+        </style>   
         <div class="section">
             <div class="vertical-margin layout horizontal center">
                 <t-input id="firstName" class="flex" label="First Name"  error-message="You missed this." required auto-validate value="{{firstName}}"></t-input>

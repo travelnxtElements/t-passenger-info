@@ -1,9 +1,11 @@
 <link rel="import" href="../polymer/polymer.html" />
 <link rel="import" href="../t-section-header/t-section-header.html" />
 <link rel="import" href="t-passenger-segment.html">
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
 
 <dom-module id="t-passenger-info-list">
-    <style>
+    <template> 
+    <style include="iron-flex">
         :host {
             width: 100%;
             -webkit-box-sizing: border-box;
@@ -38,8 +40,7 @@
         .section {
             padding: 0 10px;
         }
-        </style>
-    <template>        
+        </style>       
         <t-notify hidden$="{{!errorBlock}}" type="error" id="notify" message="{{errorMessage}}"></t-notify>
         <div class="layout vertical">
             <template is="dom-repeat" items="{{data}}" as="passenger">

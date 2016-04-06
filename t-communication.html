@@ -2,6 +2,7 @@
 <link rel="import" href="../polymer/polymer.html" />
 <link rel="import" href="../t-section-header/t-section-header.html" />
 <link rel="import" href="../t-input/t-input.html" />
+<link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
 <!--
     t-communication is a polymer component that generates a communication form which includes a email field and phone number field.
     This comoponent repeats the passenger segment form for each passenger
@@ -10,7 +11,7 @@
 -->
 <dom-module id="t-communication">
     <template>
-        <style>
+        <style include="iron-flex">
         .section {
             padding: 0 10px;
         }
