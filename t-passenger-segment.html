@@ -1,6 +1,7 @@
 <link rel="import" href="../polymer/polymer.html" />
 <link rel="import" href="../t-calendar/t-calendar.html">
 <link rel="import" href="../t-input/t-input.html">
+<link rel="import" href="../t-dropdown-menu/t-dropdown-menu.html">
 <link rel="import" href="../t-radio-group/t-radio-group.html">
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
 <!--
@@ -25,21 +26,18 @@
             margin-bottom: 10px;
         }
         
-        .vertical-margin t-input {
-            margin-right: 5px;
+        .vertical-margin t-input:not(.suffix) , #title,.calendar {
+            margin-right: 10px;
         }
         
         .vertical-margin t-input:last-child {
             margin-right: 0;
         }
         
-        .suffix {
-            width: 20%;
+        .suffix , #title{
+            width: 75px;
         }
         
-        .calendar {
-            margin-right: 5px;
-        }
         
         :host::content input {
             text-transform: capitalize;
@@ -50,7 +48,16 @@
         }
         </style>   
         <div class="section">
-            <div class="vertical-margin layout horizontal center">
+            <div class="vertical-margin layout horizontal start">
+                <template is="dom-if" if=[[!hideTitle]]>
+                    <t-dropdown-menu  id="title" class="title" label="Title" error-message="Select title" required>
+                        <paper-menu class="dropdown-content"  attr-for-selected="selection" selected="{{title}}" selected-attribute="selection" >
+                          <template is="dom-repeat" items="{{_listTitles(type)}}" as="item">
+                            <paper-item selection="[[item]]">[[item]]</paper-item>
+                          </template>
+                        </paper-menu>
+                    </t-dropdown-menu>
+                </template>
                 <t-input id="firstName" class="flex" label="First Name"  error-message="You missed this." required auto-validate value="{{firstName}}"></t-input>
             </div>
             <template is="dom-if" if=[[!hideMiddleName]]>
@@ -76,133 +83,149 @@
     </template>
 </dom-module>
 <script>
-(function() {
-    Polymer({
+    (function () {
+        Polymer({
 
-        is: 't-passenger-segment',
+            is: 't-passenger-segment',
 
-        properties: {
+            properties: {
 
-            /**
-             * Set or get the firstName of the form.
-             */
-            firstName: {
-                type: 'String',
-                notify: true
+                /**
+                 * Set or get the firstName of the form.
+                 */
+                firstName: {
+                    type: String,
+                    notify: true
+                },
+
+                /**
+                 * Set or get the middleName of the form.
+                 */
+                middleName: {
+                    type: String,
+                    notify: true
+                },
+
+                /**
+                 * Set or get the lastName of the form.
+                 */
+                lastName: {
+                    type: String,
+                    notify: true
+                },
+
+                /**
+                 * Set or get the suffix of the form.
+                 */
+                suffix: {
+                    type: String,
+                    notify: true
+                },
+
+                /**
+                 * Set or get the dateOfBirth of the form.
+                 */
+                dateOfBirth: {
+                    type: String,
+                    notify: true
+                },
+
+                /**
+                 * Set or get the title of the form.
+                 */
+                title: {
+                    type: String,
+                    notify: true
+                },
+
+                /**
+                 * Set or get the gender of the form.
+                 * allowed types(case sensitive): Male/Female 
+                 */
+                gender: {
+                    type: String,
+                    value: 'Male',
+                    notify: true
+                },
+
+                /**
+                 * Response object of the form for frequent flyers details.
+                 * allowed types(case sensitive): Adult/Child/Infant/Senior
+                 */
+                type: {
+                    type: String,
+                    notify: true
+                },
+
+                /**
+                 * Pass true to hide MiddleName
+                 */
+                hideMiddleName: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Pass true to hide Suffix
+                 */
+                hideSuffix: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Pass true to hide Title
+                 */
+                hideTitle: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Pass true to hide DateOfBirth
+                 */
+                hideDateOfBirth: {
+                    type: Boolean,
+                    value: false
+                },
+
+                /**
+                 * Pass true to hide Gender
+                 */
+                hideGender: {
+                    type: Boolean,
+                    value: false
+                },
+
             },
 
-            /**
-             * Set or get the middleName of the form.
-             */
-            middleName: {
-                type: 'String',
-                notify: true
+            ready: function () {
+                this._setCalendar();
             },
 
-            /**
-             * Set or get the lastName of the form.
-             */
-            lastName: {
-                type: 'String',
-                notify: true
+            attached: function () {
+                this.hideMiddleName = !(!this.hideMiddleName);
+                this.hideSuffix = !(!this.hideSuffix);
+                this.hideDateOfBirth = !(!this.hideDateOfBirth);
+                this.hideGender = !(!this.hideGender);
             },
 
-            /**
-             * Set or get the suffix of the form.
-             */
-            suffix: {
-                type: 'String',
-                notify: true
+            _setCalendar: function () {
+                var calArr = Polymer.dom(this.root).querySelectorAll('t-calendar');
             },
 
-            /**
-             * Set or get the dateOfBirth of the form.
-             */
-            dateOfBirth: {
-                type: 'String',
-                notify: true
+            _getMinDate: function (type) {
+                var date = new Date();
+                switch (type.toLowerCase()) {
+                    case 'child':
+                        return new Date(date.setFullYear(date.getFullYear() - 11));
+                    case 'infant':
+                        return new Date(date.setFullYear(date.getFullYear() - 2));
+
+                }
             },
 
-            /**
-             * Set or get the gender of the form.
-             * allowed types(case sensitive): Male/Female 
-             */
-            gender: {
-                type: String,
-                value: 'Male',
-                notify: true
-            },
-
-            /**
-             * Response object of the form for frequent flyers details.
-             * allowed types(case sensitive): Adult/Child/Infant/Senior
-             */
-            type: {
-                type: 'String',
-                notify: true
-            },
-
-            /**
-             * Pass true to hide MiddleName
-             */
-            hideMiddleName: {
-                type: Boolean,
-                value: false
-            },
-
-            /**
-             * Pass true to hide Suffix
-             */
-            hideSuffix: {
-                type: Boolean,
-                value: false
-            },
-
-            /**
-             * Pass true to hide DateOfBirth
-             */
-            hideDateOfBirth: {
-                type: Boolean,
-                value: false
-            },
-
-            /**
-             * Pass true to hide Gender
-             */
-            hideGender: {
-                type: Boolean,
-                value: false
-            },
-
-        },
-        
-        ready: function() {
-            this._setCalendar();
-        },
-
-        attached: function(){
-            this.hideMiddleName = !(!this.hideMiddleName);
-            this.hideSuffix = !(!this.hideSuffix);
-            this.hideDateOfBirth = !(!this.hideDateOfBirth);
-            this.hideGender = !(!this.hideGender);
-        },
-        
-        _setCalendar: function() {
-            var calArr = Polymer.dom(this.root).querySelectorAll('t-calendar');
-        },
-
-        _getMinDate: function(type) {
-            var date = new Date();
-            switch (type.toLowerCase()) {
-                case 'child':
-                    return new Date(date.setFullYear(date.getFullYear() - 11));
-                case 'infant':
-                    return new Date(date.setFullYear(date.getFullYear() - 2));
-
-            }
-        },
-
-        _getMaxDate: function (type) {
+            _getMaxDate: function (type) {
                 var date = new Date();
                 switch (type.toLowerCase()) {
                     case 'adult':
@@ -215,17 +238,29 @@
                 }
             },
 
-        /**
-         * This methods validates all required fields of the component
-         */
-        validate: function() {
-            var all = Polymer.dom(this.root).querySelectorAll('[required]'),
-            isValid = true;
-            all.forEach(function(element, index){
-                isValid = element.validate() && isValid;
-            });
-            return isValid;
-        }
-    });
-})();
+            _listTitles: function (type) {
+                switch (type.toLowerCase()) {
+                    case 'adult':
+                        return ["Mr", "Ms", "Mrs"];
+                    case 'child':
+                        return ["Master", "Miss"];
+                    default:
+                        return ["Master", "Miss"];
+
+                }
+            },
+
+            /**
+             * This methods validates all required fields of the component
+             */
+            validate: function () {
+                var all = Polymer.dom(this.root).querySelectorAll('[required]'),
+                isValid = true;
+                all.forEach(function (element, index) {
+                    isValid = element.validate() && isValid;
+                });
+                return isValid;
+            }
+        });
+    })();
 </script>

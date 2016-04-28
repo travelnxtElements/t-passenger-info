@@ -64,7 +64,7 @@
         <div class="layout vertical">
             <template is="dom-repeat" items="[[passengerData]]" as="passenger">
                 <t-section-header label="{{_getPaxHeader(passenger.Type)}}"></t-section-header>
-                <t-passenger-segment first-name="{{passenger.FirstName}}" middle-name="{{passenger.MiddleName}}" last-name="{{passenger.LastName}}" type="{{_getType(passenger.Type)}}"  gender="{{passenger.GenderString}}" suffix="{{passenger.Suffix}}" date-of-birth="{{passenger.DOB}}"></t-passenger-segment>
+                <t-passenger-segment first-name="{{passenger.FirstName}}" middle-name="{{passenger.MiddleName}}" last-name="{{passenger.LastName}}" type="{{_getType(passenger.Type)}}"  gender="{{passenger.GenderString}}" suffix="{{passenger.Suffix}}" title="{{passenger.Title}}" date-of-birth="{{passenger.DOB}}"></t-passenger-segment>
                 <div class="vertical-margin layout">
                     <t-frequent-flyer passenger-id="[[index]]" chosen-programs="[[passenger.optedPrograms]]" airline-list="[[airlineList]]" frequent-flyer-url="[[frequentFlyerUrl]]"></t-frequent-flyer>
                 </div>
@@ -318,6 +318,7 @@
                 var passengerDetails = {
                     'firstName': segment.firstName,
                     'middleName': segment.middleName,
+                    'title': segment.title,
                     'lastName': segment.lastName,
                     'suffix': segment.suffix,
                     'dob': segment.dateOfBirth,
@@ -364,10 +365,10 @@
             /**
              * This methods validates all passenger segement form of the component
              */
-            validate: function() {
+            validate: function () {
                 var all = Polymer.dom(this.root).querySelectorAll('t-passenger-segment'),
                 isValid = true;
-                all.forEach(function(element, index){
+                all.forEach(function (element, index) {
                     isValid = element.validate() && isValid;
                 });
                 return isValid;
