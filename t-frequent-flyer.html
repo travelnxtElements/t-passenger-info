@@ -144,7 +144,7 @@
         prefillSelectedPrograms: function () {
             var component = this;
             this.chosenPrograms.forEach(function (program) {
-                var ffElements = component.querySelectorAll('[data-code=' + program.airlineCode + ']');
+                var ffElements = component.querySelectorAll('[data-code="' + program.airlineCode + '"]');
                 var ffArray = [].slice.call(ffElements);
                 ffArray.forEach(function (element) {
                     if (element.tagName.toLowerCase() == 't-dropdown-menu') {
@@ -167,8 +167,8 @@
             var component = this;
             var chosenPrograms = [];
             this.airlineList.forEach(function (airline, index) {
-                var ffInput = component.querySelector('t-input[data-code=' + airline.code + ']');
-                var ffDropdown = component.querySelector('t-dropdown-menu[data-code=' + airline.code + ']');;
+                var ffInput = component.querySelector('t-input[data-code="' + airline.code + '"]');
+                var ffDropdown = component.querySelector('t-dropdown-menu[data-code="' + airline.code + '"]');;
                 var redressInput = component.$.redressNumber;
                 if (ffInput.value !== undefined && ffInput.value.length > 0) {
                     var program = {
