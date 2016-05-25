@@ -134,7 +134,8 @@
                  */
                 title: {
                     type: String,
-                    notify: true
+                    notify: true,
+                    observer: '_setGender'
                 },
 
                 /**
@@ -246,6 +247,17 @@
                     default:
                         return ["Master", "Miss"];
 
+                }
+            },
+
+            _setGender:function () {
+                if (this.hideGender && this.title) {
+                    var maleTitles = ["Mr", "Master"];
+                    if (maleTitles && maleTitles.length && maleTitles.indexOf(this.title) >= 0) {
+                        this.gender = 'Male'
+                    }else{
+                        this.gender = 'Female';
+                    }
                 }
             },
 
