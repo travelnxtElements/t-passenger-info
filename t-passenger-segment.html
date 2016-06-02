@@ -197,6 +197,16 @@
                     value: false
                 },
 
+                /**
+                 * Provide the departure date object of the journey to the component
+                 */
+                departureDate: {
+                    type: Object,
+                    notify: true,
+                    value: function () {
+                        return new Date();
+                    }
+                }
             },
 
             ready: function () {
@@ -215,10 +225,12 @@
             },
 
             _getMinDate: function (type) {
-                var date = new Date();
+                var date = new Date(this.departureDate) || new Date();
                 switch (type.toLowerCase()) {
                     case 'child':
-                        return new Date(date.setFullYear(date.getFullYear() - 11));
+                        var minDate = new Date(date.setFullYear(date.getFullYear() - 12));
+                        minDate = minDate.setDate(minDate.getDate() + 1);
+                        return new Date(minDate);
                     case 'infant':
                         return new Date(date.setFullYear(date.getFullYear() - 2));
 
@@ -226,12 +238,14 @@
             },
 
             _getMaxDate: function (type) {
-                var date = new Date();
+                var date = new Date(this.departureDate) || new Date();
                 switch (type.toLowerCase()) {
                     case 'adult':
                         return new Date(date.setFullYear(date.getFullYear() - 12));
                     case 'child':
-                        return new Date(date.setFullYear(date.getFullYear() - 2));
+                        var minDate = new Date(date.setFullYear(date.getFullYear() - 2));
+                        minDate = minDate.setDate(minDate.getDate() - 1);
+                        return new Date(minDate);
                     default:
                         return new Date();
 
