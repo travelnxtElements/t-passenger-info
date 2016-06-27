@@ -1,19 +1,21 @@
-<link rel="import" href="../t-passenger-info-list.html">
-<link rel="import" href="../t-communication.html">
-<style>
-	body{
-		margin: 0;
-	}
-</style>
-
+<link rel="import" href="../t-passenger-info-page.html">
+<link rel="import" href="../../t-shared-components/theme.html">
+<style is="custom-style" include="travel-element-styles"></style>
+<!-- 
 <t-passenger-info-list >
 </t-passenger-info-list>
 <t-communication>
-</t-communication>
+</t-communication> -->
+
+	<t-passenger-info-page 
+		product="car" 
+		hide-gender 
+		hide-date-of-birth 
+		hide-suffix
+		hide-middle-name>			
+	</t-passenger-info-page>
 
 <script type="text/javascript">
 
-var paxListNode = document.querySelector('t-passenger-info-list');
-paxListNode.data = [{type:'Adult', gender:'Male', hideMiddleName:true, hideSuffix: true, hideDateOfBirth: true, hideGender: true }];
 
 </script>
