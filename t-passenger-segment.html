@@ -49,13 +49,8 @@
         <div class="section">
             <div class="vertical-margin layout horizontal start">
                 <template is="dom-if" if=[[!hideTitle]]>
-                    <t-dropdown-menu  id="title" class="title" label="Title" error-message="Select title" required>
-                        <paper-menu class="dropdown-content"  attr-for-selected="selection" selected="{{title}}" selected-attribute="selection" >
-                          <template is="dom-repeat" items="{{_listTitles(type)}}" as="item">
-                            <paper-item selection="[[item]]">[[item]]</paper-item>
-                          </template>
-                        </paper-menu>
-                    </t-dropdown-menu>
+                    <t-dropdown  id="title" class="title" label="Title" error-message="Select title" selected-item="{{title}}"  dropdown-array="{{_listTitles(type)}}" required>
+                    </t-dropdown>
                 </template>
                 <t-input id="firstName" class="flex" label="First Name"  error-message="You missed this." required auto-validate value="{{firstName}}"></t-input>
             </div>

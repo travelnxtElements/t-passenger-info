@@ -1,6 +1,6 @@
 <!-- We are still creating this components -->
 <link rel="import" href="../polymer/polymer.html" />
-<link rel="import" href="../t-dropdown-menu/t-dropdown-menu.html" />
+<link rel="import" href="../t-dropdown/t-dropdown.html" />
 <link rel="import" href="../t-section-header/t-section-header.html" />
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
 <dom-module id="t-frequent-flyer">
@@ -59,7 +59,7 @@
             margin: 10px 0;
             color: var(--grey-three, #bbbbbb);
         }
-        t-dropdown-menu,t-input{
+        t-dropdown,t-input{
             margin-bottom: 10px;
         }
         </style>
@@ -70,15 +70,9 @@
             <div class="toggle-section">
                 <template is="dom-repeat" items="{{airlineList}}" as="airline">
                     <div class="sectionHeader">{{airline.name}}</div>
-                    <t-dropdown-menu label="Program Name" id="programName" name="programName" data-code$="[[airline.code]]">
-                        <paper-menu class="dropdown-content" selected="0">
-                            <template is="dom-repeat" items="{{airline.programs}}" as="program">
-                                <template is="dom-repeat" items="[[program.lstOfMembershipProvider]]" as="provider">
-                                    <paper-item data-name$="[[program.name]]" data-code$="[[provider.code]]">{{_getItemName(provider.code,program.name)}}</paper-item>
-                                </template>
-                            </template>
-                        </paper-menu>
-                    </t-dropdown-menu>
+                    <t-dropdown label="Program Name" id="programName" name="programName" dropdown-array="[[_getProgramsArray(airline.programs)]]" data-code$="[[airline.code]]"  label-key="label" value-key="programName">
+                        <!-- <dropdown-item value="[[program.name]]">{{program.code}} - {{program.name}}</dropdown-item> -->
+                    </t-dropdown>
                     <t-input name="programNumber" data-code$="[[airline.code]]" label="Program Number"></t-input>
                 </template>
                 <div class="note" hidden$="[[_isEmpty(airlineList)]]">
@@ -116,17 +110,42 @@
 
             passengerId: String,
 
-
         },
 
+        observers: ['_clearDropdown(airlineList.*)'],
+
+        _clearDropdown: function(){
+            var dropdowns= this.querySelectorAll('select');
+            setTimeout(function(){
+                for(var x = 0 ; x < dropdowns.length; x++) {
+                    dropdowns[x].selectedIndex = -1;
+                }
+            },10);
+        },
         ready: function () {
             var component = this;
             document.addEventListener('ff-programs-retrieved', function () {
                 setTimeout(function () {
-
                     component.prefillSelectedPrograms();
-                }, 0);
+                }, 110);
             });
+        },
+
+        _getProgramsArray: function(programs) {
+            if(!programs) {
+                return [];
+            }
+
+            return programs
+                .map(function(pgm) {
+                    return pgm.lstOfMembershipProvider.map(function(m) { 
+                        var label = m.code + ' - ' + pgm.name;
+                        return { programName: pgm.name, airlineCode: m.code, label: label};
+                    });
+                })
+                .reduce(function(arr, a) {
+                    return arr.concat(a);
+                }, []);
         },
 
         _getItemName:function(code,name){
@@ -147,14 +166,8 @@
                 var ffElements = component.querySelectorAll('[data-code="' + program.airlineCode + '"]');
                 var ffArray = [].slice.call(ffElements);
                 ffArray.forEach(function (element) {
-                    if (element.tagName.toLowerCase() == 't-dropdown-menu') {
-                        var items = [].slice.call(element.querySelectorAll('paper-item'));
-                        items.forEach(function (item, index) {
-                            if (item.getAttribute('data-code').toLowerCase() == program.loyaltyProgramCode.toLowerCase()) {
-                                var menu = element.querySelector('paper-menu');
-                                menu.selected = index;
-                            }
-                        });
+                    if (element.tagName.toLowerCase() == 't-dropdown') {
+                        element.selectedItem = program.loyaltyProgramName;
                     } else {
                         element.value = program.frequentFlyerNumber;
                     }
@@ -168,15 +181,18 @@
             var chosenPrograms = [];
             this.airlineList.forEach(function (airline, index) {
                 var ffInput = component.querySelector('t-input[data-code="' + airline.code + '"]');
-                var ffDropdown = component.querySelector('t-dropdown-menu[data-code="' + airline.code + '"]');;
+                var ffDropdown = component.querySelector('t-dropdown[data-code="' + airline.code + '"]');
                 var redressInput = component.$.redressNumber;
+                var selectedAirlineObj = ffDropdown.dropdownArray.find(function(item){
+                    return ffDropdown.selectedItem === item.programName;
+                })
                 if (ffInput.value !== undefined && ffInput.value.length > 0) {
                     var program = {
                         id: component._getUniqueCode(),
                         paxId: component.passengerId,
                         airlineCode: airline.code,
-                        loyaltyProgramCode: ffDropdown.selectedItem.getAttribute('data-code'),
-                        loyaltyProgramName: ffDropdown.selectedItem.getAttribute('data-name'),
+                        loyaltyProgramCode: selectedAirlineObj.airlineCode,
+                        loyaltyProgramName: ffDropdown.selectedItem,
                         frequentFlyerNumber: ffInput.value,
                         redressNumber: redressInput.value
                     };
