@@ -32,9 +32,9 @@ Example:
 		    }
         </style>
 
-        <content select="t-header"></content>
-
         <t-notify type="error" id="notify"></t-notify>
+
+        <content select="t-header"></content>
 
         <div class="layout vertical">
             <template 
@@ -208,7 +208,7 @@ Example:
                 }
             },
 
-            attached: function () {
+            loadPassengers: function () {
             	this.$.sessionStore.load();
             },
 
