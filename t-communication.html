@@ -12,11 +12,17 @@
 <dom-module id="t-communication">
     <template>
         <style include="iron-flex">
+        :host{
+            display: block;
+        }
+        t-section-header {
+            margin-bottom: 0;
+        }
         .section {
-            padding: 0 10px;
+            padding: var(--normal-spacing,10px);
         }
         .section t-input{
-            margin-bottom: 10px;
+            margin-bottom: 15px;
         }
         </style>
         <div class="layout vertical">
