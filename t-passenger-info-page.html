@@ -96,7 +96,7 @@ Example:
             </template>
         </div>
 
-        <t-communication 
+        <t-communication
             phone="{{passengerInfo.phone}}" 
             email="{{passengerInfo.email}}">                
         </t-communication>
@@ -127,169 +127,178 @@ Example:
             on-t-sessionstorage-save-success="onSessionSave"
             on-t-sessionstorage-load-success="onSessionLoad">
         </t-sessionstorage>
-
     </template>
+
     <script>
-        Polymer({
-            is: 't-passenger-info-page',
 
-            observers: [
-                '_onPassengerPageLoad(visible)'
-            ],
+        (function () {
 
-            properties: {
+            'use strict'
+            
+            Polymer({
+                
+                is: 't-passenger-info-page',
 
-                visible: {
-                    type: Boolean,
-                    value: false,
-                    notify: true
+                properties: {
+
+                    visible: {
+                        type: Boolean,
+                        value: false,
+                        notify: true
+                    },
+
+                    /*
+                     * <p>This string is query string containing token value</p>
+                    */
+                    authToken: {
+                        type: String,
+                        value: ''
+                    },
+
+                    /*
+                     * <p>This property holds the value of api base URL</p>
+                    */
+                    apiBaseUrl: {
+                        type: String,
+                        value: ''
+                    },
+
+                    /*
+                     * <p>This property holds the value of web api URL format</p>
+                    */
+                    apiUrlFormat: {
+                        type: String,
+                        value: ''
+                    },
+
+                    product: {
+                        type: String
+                    },
+
+                    passengerInfo: {
+                        type: Object,
+                        notify: true
+                    },
+
+                    isPassportRequired: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    /**
+                     * Pass true to hide MiddleName
+                    */
+                    hideMiddleName: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    /**
+                     * Pass true to hide Suffix
+                     */
+                    hideSuffix: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    /**
+                     * Pass true to hide Title
+                     */
+                    hideTitle: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    /**
+                     * Pass true to hide DateOfBirth
+                     */
+                    hideDateOfBirth: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    /**
+                     * Pass true to hide Gender
+                     */
+                    hideGender: {
+                        type: Boolean,
+                        value: false
+                    }
                 },
 
-                /*
-                 * <p>This string is query string containing token value</p>
-                */
-                authToken: {
-                    type: String,
-                    value: ''
+                observers: [
+                    '_visibleChange(visible)'
+                ],
+
+                _visibleChange: function (visible) {
+                    if (visible) {
+                        this.$.sessionStore.load();
+                    }
                 },
 
-                /*
-                 * <p>This property holds the value of api base URL</p>
-                */
-                apiBaseUrl: {
-                    type: String,
-                    value: ''
+                onSessionLoad: function () {
+                    if (this.$.sessionStore.value) {
+                        this.passengerInfo = this.$.sessionStore.value;
+                    } else{
+                        this._buildPassengerInfo();
+                    }
                 },
 
-                /*
-                 * <p>This property holds the value of web api URL format</p>
-                */
-                apiUrlFormat: {
-                    type: String,
-                    value: ''
+                onSessionSave:function () {
+                    if (this.$.sessionStore.value) {
+                        this.fire('passenger-save-success');
+                    }
                 },
 
-                product: {
-                    type: String
+                _getPaxHeader: function (type) {
+                    if (this.product.toLowerCase() === 'car') {
+                        return 'Driver Name'
+                    }
+                    var index = this._getDisplayIndex(type);
+                    return this._getType(type) + " " + index;
                 },
 
-                passengerInfo: {
-                    type: Object,
-                    notify: true
+                _isFlight: function (type) {
+                    return type.toLowerCase() === 'flight';
                 },
 
-                isPassportRequired: {
-                    type: Boolean,
-                    value: false
+                _buildPassengerInfo: function () {
+                    //this list will be built using product type
+                    //As of now building passenger info required for car details
+
+                    this.passengerInfo = {
+                        passengerList: [{
+                            title: "",
+                            firstName: "",
+                            // "middleName": "Madhavrao",
+                            lastName: "",
+                            // "suffix": "Jr",
+                            // "dob": "09/12/1990",
+                            // "gender": "Male",
+                            type: "Adult",
+                            // "EmailId": "asd@asd.asd"
+                        }   ],
+                        phone: '',
+                        email: ''
+                    };
                 },
 
-                /**
-                 * Pass true to hide MiddleName
-                */
-                hideMiddleName: {
-                    type: Boolean,
-                    value: false
+                validate: function () {
+                    var isValid = true;
+                    isValid = this.querySelector('t-passenger-segment').validate() && isValid;
+                    isValid = this.querySelector('t-communication').validate() && isValid;
+                    return isValid;
                 },
 
-                /**
-                 * Pass true to hide Suffix
-                 */
-                hideSuffix: {
-                    type: Boolean,
-                    value: false
-                },
-
-                /**
-                 * Pass true to hide Title
-                 */
-                hideTitle: {
-                    type: Boolean,
-                    value: false
-                },
-
-                /**
-                 * Pass true to hide DateOfBirth
-                 */
-                hideDateOfBirth: {
-                    type: Boolean,
-                    value: false
-                },
-
-                /**
-                 * Pass true to hide Gender
-                 */
-                hideGender: {
-                    type: Boolean,
-                    value: false
+                savePassengerData: function () {
+                    if (this.validate()) {
+                        this.$.sessionStore.value = this.passengerInfo;
+                        this.$.sessionStore.save();
+                    }
                 }
-            },
+            });
 
-            _onPassengerPageLoad: function (visible) {
-                if (visible) {
-                    this.$.sessionStore.load();
-                }
-            },
+        })();
 
-            onSessionLoad: function () {
-                if (this.$.sessionStore.value) {
-                    this.passengerInfo = this.$.sessionStore.value;
-                } else{
-                    this._buildPassengerInfo();
-                }
-            },
-
-            onSessionSave:function () {
-                if (this.$.sessionStore.value) {
-                    this.fire('passenger-save-success');
-                }
-            },
-
-            _getPaxHeader: function (type) {
-                if (this.product.toLowerCase() === 'car') {
-                    return 'Driver Name'
-                }
-                var index = this._getDisplayIndex(type);
-                return this._getType(type) + " " + index;
-            },
-
-            _isFlight: function (type) {
-                return type.toLowerCase() === 'flight';
-            },
-
-            _buildPassengerInfo: function () {
-                //this list will be built using product type
-                //As of now building passenger info required for car details
-
-                this.passengerInfo = {
-                    passengerList: [{
-                        title: "",
-                        firstName: "",
-                        // "middleName": "Madhavrao",
-                        lastName: "",
-                        // "suffix": "Jr",
-                        // "dob": "09/12/1990",
-                        // "gender": "Male",
-                        type: "Adult",
-                        // "EmailId": "asd@asd.asd"
-                    }   ],
-                    phone: '',
-                    email: ''
-                };
-            },
-
-            validate: function () {
-                var isValid = true;
-                isValid = this.querySelector('t-passenger-segment').validate() && isValid;
-                isValid = this.querySelector('t-communication').validate() && isValid;
-                return isValid;
-            },
-
-            savePassengerData: function () {
-                if (this.validate()) {
-                    this.$.sessionStore.value = this.passengerInfo;
-                    this.$.sessionStore.save();
-                }
-            }
-        });
     </script>
 </dom-module>
