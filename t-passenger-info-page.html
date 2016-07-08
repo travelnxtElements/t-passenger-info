@@ -27,14 +27,8 @@ Example:
 <dom-module id="t-passenger-info-page">
     <template>
         <style>
-            :host, #search {
+            :host, t-button {
                 display: block;
-            }
-            #search {
-                margin: var(--normal-spacing,10px);
-            }
-            t-section-header {
-                margin-bottom: 0;
             }
         </style>
 
@@ -70,7 +64,7 @@ Example:
                         hide-gender="{{hideGender}}">
                     </t-passenger-segment>
 
-                    <template is="dom-if" if="{{isPassportRequired}}">
+                    <template is="dom-if" if="[[isPassportRequired]]">
                         <div class="vertical-margin layout">
                             <t-passport-info 
                                 issue-country={{passenger.PassportInfo.IssuingCountry}}
@@ -123,7 +117,7 @@ Example:
         <t-sessionstorage
             id="sessionStore"
             key="Car_Passenger_Info"
-            api-url-format="{{apiUrlFormat}}"
+            api-url-format="[[apiUrlFormat]]"
             on-t-sessionstorage-save-success="onSessionSave"
             on-t-sessionstorage-load-success="onSessionLoad">
         </t-sessionstorage>
@@ -136,7 +130,7 @@ Example:
             'use strict'
             
             Polymer({
-                
+
                 is: 't-passenger-info-page',
 
                 properties: {
@@ -246,6 +240,7 @@ Example:
 
                 onSessionSave:function () {
                     if (this.$.sessionStore.value) {
+                        this.passengerInfo = this.$.sessionStore.value;
                         this.fire('passenger-save-success');
                     }
                 },
