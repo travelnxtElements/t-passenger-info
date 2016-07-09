@@ -102,7 +102,7 @@ Example:
         </t-communication>
 
         <t-button 
-            id="search" 
+            id="savePassengers"
             class="primary row" 
             on-click="savePassengerData" 
             type="button" 
@@ -231,9 +231,13 @@ Example:
                 ],
 
                 _visibleChange: function (visible) {
+                    this.$.savePassengers.disabled = true;
                     if (visible) {
                         this.$.sessionStore.load();
                     }
+                    setTimeout(function () {                        
+                        this.$.savePassengers.disabled = false;
+                    }.bind(this), 10)
                 },
 
                 onSessionLoad: function () {
@@ -285,6 +289,9 @@ Example:
                 },
 
                 validate: function () {
+                    if (this.$.savePassengers.disabled) {
+                        return;
+                    }
                     var isValid = true;
                     isValid = this.querySelector('t-passenger-segment').validate() && isValid;
                     isValid = this.querySelector('t-communication').validate() && isValid;
