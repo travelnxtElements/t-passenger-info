@@ -53,15 +53,15 @@
                     <t-dropdown  id="title" class="title" label="Title" error-message="Select title" selected-item="{{title}}"  dropdown-array="{{_listTitles(type)}}" required>
                     </t-dropdown>
                 </template>
-                <t-input id="firstName" class="flex" label="First Name"  error-message="You missed this." required auto-validate value="{{firstName}}"></t-input>
+                <t-input id="firstName" class="flex" label="First Name" pattern="^[a-zA-Z\d.' ]+" error-message="You missed this." required auto-validate value="{{firstName}}"></t-input>
             </div>
             <template is="dom-if" if=[[!hideMiddleName]]>
                 <div class="vertical-margin layout horizontal center">
-                    <t-input id="middleName" class="flex" label="Middle Name" auto-validate value="{{middleName}}"></t-input>
+                    <t-input id="middleName" class="flex" label="Middle Name"pattern="^[a-zA-Z\d.' ]+" auto-validate value="{{middleName}}"></t-input>
                 </div>
             </template>
             <div class="vertical-margin layout horizontal center">
-                <t-input id="lastName" class="flex" label="Last Name" error-message="You missed this." required auto-validate value="{{lastName}}"></t-input>
+                <t-input id="lastName" class="flex" label="Last Name" error-message="You missed this." pattern="^[a-zA-Z\d.' ]+" required auto-validate value="{{lastName}}"></t-input>
                 <template is="dom-if" if=[[!hideSuffix]]>
                     <t-input id="suffix" class="suffix" label="Suffix" value="{{suffix}}"></t-input>
                 </template>
