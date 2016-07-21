@@ -8,17 +8,29 @@
     <script src="../../webcomponentsjs/webcomponents-lite.js"></script>
     <link rel="import" href="../t-passenger-info-page.html">
     <link rel="import" href="../../t-shared-components/theme.html">
+    <link rel="import" href="../../t-header/t-header.html">
     <style is="custom-style" include="travel-element-styles"></style>
 </head>
 
 <body>
-    <t-passenger-info-page 
-    	product="car" 
-    	hide-gender 
-    	hide-date-of-birth 
-    	hide-suffix 
-    	hide-middle-name
-    	api-url-format="/api/Session/SESSIONKEY">
+    <t-passenger-info-page
+        id="passengerInfo"
+        name="paxInfo"
+        visible
+        product="car"
+        hide-gender
+        hide-date-of-birth
+        hide-suffix
+        hide-middle-name
+        api-url-format="[[apiUrlFormat]]"
+        passenger-info="{{passengerInfo}}"
+        on-passenger-save-success="_goToPaymentPage">
+        <t-header
+            icon="arrow-back"
+             url="[[siteUrl]]car/details"
+            label="Guest Info"
+            normal-heading>
+        </t-header>
     </t-passenger-info-page>
 </body>
 

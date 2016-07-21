@@ -9,21 +9,53 @@
 <link rel="import" href="../iron-flex-layout/iron-flex-layout-classes.html" />
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
 <link rel="import" href="../iron-ajax/iron-request.html">
+
 <!--
-A comment describing this element
+    <h3>Details:</h3>
 
-Example:
+        `t-passenger-info-page` is a passenger infor page component which displays & stores passenger information.
 
-    <my-elem></my-elem>
+        It uses following child components in it -
+            1. `t-frequent-flyer`
+            2. `t-passenger-segment`
+            3. `t-passport-info`
+            4. `t-communication`
+            5. `t-button`
+            6. `t-sessionstorage`
+            7. `t-section-header`
 
-Example:
+    <h3>Events:</h3>
 
-    <my-elem>
-      <h2>Hello my-elem</h2>
-    </my-elem>
+        following events are fired by this component
 
-@demo demo/index.html
+            1. 'confirmation-error' - fired when error is occured while fetching booked itinerary from session, session is currently not used in this page.
+            2. 'confirmation-success' - fired when confirmation page is loaded succesfully.
+            3. `go-to-search` - fired when page is loaded without required page data.
+
+    <h3>Example:</h3>
+
+        <t-passenger-info-page
+            id="passengerInfo"
+            name="paxInfo"
+            product="car"
+            hide-gender
+            hide-date-of-birth
+            hide-suffix
+            hide-middle-name
+            api-url-format="[[apiUrlFormat]]"
+            passenger-info="{{passengerInfo}}"
+            on-passenger-save-success="_goToPaymentPage">
+            <t-header
+                icon="bgv:arrow-left"
+                 url="[[siteUrl]]car/details"
+                label="Guest Info"
+                normal-heading>
+            </t-header>
+        </t-passenger-info-page>
+
+    @demo demo/index.html
 -->
+
 <dom-module id="t-passenger-info-page">
     <template>
         <style>
@@ -141,6 +173,10 @@ Example:
 
                 properties: {
 
+                    /*
+                     * <p>This is a notification flag to indicate current page state</p>
+                     * <p>Set it to true if page needs to be displayed on browser</p>
+                    */
                     visible: {
                         type: Boolean,
                         value: false,
@@ -230,6 +266,9 @@ Example:
                     '_visibleChange(visible)'
                 ],
 
+                /*
+                 * <p>this method gets called when page becomes visible</p>
+                */
                 _visibleChange: function (visible) {
                     this.$.savePassengers.disabled = true;
                     if (visible) {
@@ -248,6 +287,9 @@ Example:
                     }
                 },
 
+                /*
+                 * <p>This is the success event handler for `t-sessionstorage` load component</p>
+                */
                 onSessionSave:function () {
                     if (this.$.sessionStore.value) {
                         this.passengerInfo = this.$.sessionStore.value;
@@ -255,6 +297,9 @@ Example:
                     }
                 },
 
+                /*
+                 * <p>This method gets product specific header names.</p>
+                */
                 _getPaxHeader: function (type) {
                     if (this.product.toLowerCase() === 'car') {
                         return 'Driver Name'
@@ -263,10 +308,16 @@ Example:
                     return this._getType(type) + " " + index;
                 },
 
+                /*
+                 * <p>Checks if the prodcut is flight</p>
+                */
                 _isFlight: function (type) {
                     return type.toLowerCase() === 'flight';
                 },
 
+                /*
+                 * <p>Builds passenger info as per selected product</p>
+                */
                 _buildPassengerInfo: function () {
                     //this list will be built using product type
                     //As of now building passenger info required for car details
@@ -288,6 +339,9 @@ Example:
                     };
                 },
 
+                /*
+                 * <p>Validates passenger inofrmation</p>
+                */
                 validate: function () {
                     if (this.$.savePassengers.disabled) {
                         return;
@@ -298,6 +352,9 @@ Example:
                     return isValid;
                 },
 
+                /*
+                 * <p>Event handler called on save button click</p>
+                */
                 savePassengerData: function () {
                     if (this.validate()) {
                         this.$.sessionStore.value = this.passengerInfo;
