@@ -202,6 +202,20 @@
                     value: function () {
                         return new Date();
                     }
+                },
+
+                /**
+                 * Minimum age of passenger
+                 */
+                minAge: {
+                    type: Number
+                },
+
+                /**
+                 * Maximum age of passenger
+                 */
+                maxAge: {
+                    type: Number
                 }
             },
 
@@ -224,11 +238,11 @@
                 var date = new Date(this.departureDate) || new Date();
                 switch (type.toLowerCase()) {
                     case 'child':
-                        var minDate = new Date(date.setFullYear(date.getFullYear() - 12));
+                        var minDate = new Date(date.setFullYear(date.getFullYear() - (this.maxAge || 12)));
                         minDate = minDate.setDate(minDate.getDate() + 1);
                         return new Date(minDate);
                     case 'infant':
-                        return new Date(date.setFullYear(date.getFullYear() - 2));
+                        return new Date(date.setFullYear(date.getFullYear() - (this.maxAge || 2)));
 
                 }
             },
@@ -237,9 +251,15 @@
                 var date = new Date(this.departureDate) || new Date();
                 switch (type.toLowerCase()) {
                     case 'adult':
-                        return new Date(date.setFullYear(date.getFullYear() - 12));
+                        if (!this.minAge && this.minAge !== 0) {
+                            this.minAge = 12;
+                        }
+                        return new Date(date.setFullYear(date.getFullYear() - this.minAge));
                     case 'child':
-                        var minDate = new Date(date.setFullYear(date.getFullYear() - 2));
+                        if (!this.minAge && this.minAge !== 0) {
+                            this.minAge = 2;
+                        }
+                        var minDate = new Date(date.setFullYear(date.getFullYear() - this.minAge));
                         minDate = minDate.setDate(minDate.getDate() - 1);
                         return new Date(minDate);
                     default:

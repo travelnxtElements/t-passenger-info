@@ -82,11 +82,10 @@
                 as="passenger">
 
                     <t-section-header 
-                        label="{{_getPaxHeader(passenger.type)}}">
+                        label="[[passenger.header]]">
                     </t-section-header>
 
                     <t-passenger-segment
-                        id="paxSegment"
                         title="{{passenger.title}}"
                         first-name="{{passenger.firstName}}"
                         middle-name="{{passenger.middleName}}"
@@ -99,7 +98,10 @@
                         hide-suffix="[[hideSuffix]]"
                         hide-title="[[hideTitle]]"
                         hide-date-of-birth="[[hideDateOfBirth]]"
-                        hide-gender="{{hideGender}}">
+                        hide-gender="{{hideGender}}"
+                        min-age="[[passenger.minAge]]"
+                        max-age="[[passenger.maxAge]]"
+                        departure-date="[[departureDate]]">
                     </t-passenger-segment>
 
                     <template is="dom-if" if="[[isPassportRequired]]">
@@ -166,6 +168,19 @@
         (function () {
 
             'use strict'
+
+            var passenger = {
+                title: "",
+                firstName: "",
+                middleName: "",
+                lastName: "",
+                suffix: "",
+                dob: "",
+                gender: "",
+                type: "",
+                emailId: "",
+                header: ""
+            };
             
             Polymer({
 
@@ -207,15 +222,24 @@
                         value: ''
                     },
 
+                    /*
+                     * <p>This property holds the value of product type e.g. hotel</p>
+                    */
                     product: {
                         type: String
                     },
 
+                    /*
+                     * <p>This object holds the value of saved passenger information</p>
+                    */
                     passengerInfo: {
                         type: Object,
                         notify: true
                     },
 
+                    /*
+                     * <p>Flag to toggle passport details view</p>
+                    */
                     isPassportRequired: {
                         type: Boolean,
                         value: false
@@ -259,6 +283,56 @@
                     hideGender: {
                         type: Boolean,
                         value: false
+                    },
+
+                    /*
+                     * <p>This property sets the title for primary passenger</p>
+                    */
+                    primaryHeader: {
+                        type: String,
+                        value:'Adult 1'
+                    },
+
+                    /**
+                     * Number of adults
+                     */
+                    adultCount: {
+                        type: Number,
+                        value: 1
+                    },
+
+                    /**
+                     * Number of children
+                     */
+                    childCount: {
+                        type: Number,
+                        value: 0
+                    },
+
+                    /**
+                     * Number of Infants
+                     */
+                    infantCount: {
+                        type: Number,
+                        value: 0
+                    },
+
+                    /**
+                     * This date is used as a reference to restrict ages in calender.
+                     * The age ranged will be determined by `ageMappings` property.                     
+                     */
+                    departureDate: {
+                        type: Date
+                    },
+
+                    /**
+                     * Provides passengerwise minimum & maximum age mappings
+                     * This object stores a property for each passenger type.
+                     * key of this property is `passenger type` & value is an object with minimum and maximum age.
+                     * Refer description for sample object structure
+                     */
+                    ageMappings: {
+                        type: Object
                     }
                 },
 
@@ -279,33 +353,29 @@
                     }.bind(this), 10)
                 },
 
+                /*
+                 * <p>This is the success event handler for `t-sessionstorage` save event</p>
+                */
                 onSessionLoad: function () {
                     if (this.$.sessionStore.value) {
                         this.passengerInfo = this.$.sessionStore.value;
                     } else{
                         this._buildPassengerInfo();
                     }
+
+                    if (this.primaryHeader && this.passengerInfo && this.passengerInfo.passengerList) {
+                        this.passengerInfo.passengerList[0].header = this.primaryHeader;
+                    }
                 },
 
                 /*
-                 * <p>This is the success event handler for `t-sessionstorage` load component</p>
+                 * <p>This is the success event handler for `t-sessionstorage` load event</p>
                 */
                 onSessionSave:function () {
                     if (this.$.sessionStore.value) {
                         this.passengerInfo = this.$.sessionStore.value;
                         this.fire('passenger-save-success');
                     }
-                },
-
-                /*
-                 * <p>This method gets product specific header names.</p>
-                */
-                _getPaxHeader: function (type) {
-                    if (this.product.toLowerCase() === 'car') {
-                        return 'Driver Name'
-                    }
-                    var index = this._getDisplayIndex(type);
-                    return this._getType(type) + " " + index;
                 },
 
                 /*
@@ -319,35 +389,106 @@
                  * <p>Builds passenger info as per selected product</p>
                 */
                 _buildPassengerInfo: function () {
-                    //this list will be built using product type
-                    //As of now building passenger info required for car details
+
+                    var passengerList = [];
+
+                    passengerList = this._getAdultData(passengerList);
+                    passengerList = this._getChildrenData(passengerList);
+                    passengerList = this._getInfantData(passengerList);
 
                     this.passengerInfo = {
-                        passengerList: [{
-                            title: "",
-                            firstName: "",
-                            // "middleName": "Madhavrao",
-                            lastName: "",
-                            // "suffix": "Jr",
-                            // "dob": "09/12/1990",
-                            // "gender": "Male",
-                            type: "Adult",
-                            // "EmailId": "asd@asd.asd"
-                        }   ],
+                        passengerList: passengerList,
                         phone: '',
-                        email: ''
+                        email:''
                     };
                 },
 
                 /*
-                 * <p>Validates passenger inofrmation</p>
+                 * <p>Builds data for all adults</p>
+                */
+                _getAdultData: function (passengerList) {
+
+                    //atleast 1 adult has to be there
+                    if (!this.adultCount) {
+                        this.adultCount = 1;
+                    }
+
+
+                    for (var i = 1; i <= this.adultCount; i++) {
+                        var newPassenger = Object.create(passenger);
+                        newPassenger.type = 'Adult';
+                        this._setAgeRange(newPassenger);
+                        newPassenger.header = newPassenger.type + ' ' + i;
+                        passengerList.push(newPassenger);
+                    }
+                    return passengerList;
+                },
+
+                /*
+                 * <p>Builds data for all children</p>
+                */
+                _getChildrenData: function (passengerList) {
+                    if (!this.childCount) {
+                        return passengerList;
+                    }
+
+                    for (var i = 1; i <= this.childCount; i++) {
+                        var newPassenger = Object.create(passenger);
+                        newPassenger.type = 'Child';
+                        this._setAgeRange(newPassenger);
+                        newPassenger.header = newPassenger.type + ' ' + i;
+                        passengerList.push(newPassenger);
+                    }
+                    return passengerList;
+                },
+
+                /*
+                 * <p>Builds data for all infants</p>
+                */
+                _getInfantData: function (passengerList) {
+                    if (!this.infantCount) {
+                        return passengerList;
+                    }
+
+                    for (var i = 1; i <= this.infantCount; i++) {
+                        var newPassenger = Object.create(passenger);
+                        newPassenger.type = 'Infant';
+                        this._setAgeRange(newPassenger);
+                        newPassenger.header = newPassenger.type + ' ' + i;
+                        passengerList.push(newPassenger);
+                    }
+                    return passengerList;
+                },
+
+                /*
+                 * <p>Checks if the prodcut is flight</p>
+                */
+                _setAgeRange: function (passenger) {
+                    if (!this.ageMappings) {
+                        return;
+                    }
+
+                    var mapping = this.ageMappings[passenger.type.toLowerCase()];
+
+                    if (!mapping) {
+                        return;
+                    }
+
+                    passenger.minAge = mapping.minAge;
+                    passenger.maxAge = mapping.maxAge;
+                },
+
+                /*
+                 * <p>Validates passenger information</p>
                 */
                 validate: function () {
                     if (this.$.savePassengers.disabled) {
                         return;
                     }
                     var isValid = true;
-                    isValid = this.querySelector('t-passenger-segment').validate() && isValid;
+                    this.querySelectorAll('t-passenger-segment').forEach(function (item) {
+                        item.validate() && isValid;
+                    })
                     isValid = this.querySelector('t-communication').validate() && isValid;
                     return isValid;
                 },
