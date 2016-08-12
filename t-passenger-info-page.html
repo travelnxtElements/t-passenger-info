@@ -1,7 +1,5 @@
 <link rel="import" href="../polymer/polymer.html" />
-<link rel="import" href="t-frequent-flyer.html">
 <link rel="import" href="t-passenger-segment.html">
-<link rel="import" href="t-passport-info.html">
 <link rel="import" href="t-communication.html">
 <link rel="import" href="../t-sessionstorage/t-sessionstorage.html">
 <link rel="import" href="../t-button/t-button.html">
@@ -10,7 +8,6 @@
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
 <link rel="import" href="../iron-ajax/iron-request.html">
 <link rel="import" href="../t-behavior/t-page-behavior.html">
-<link rel="import" href="../t-behavior/t-activity-page-behavior.html">
 
 <!--
     <h3>Details:</h3>
@@ -39,7 +36,6 @@
         <t-passenger-info-page
             id="passengerInfo"
             name="paxInfo"
-            product="car"
             hide-gender
             hide-date-of-birth
             hide-suffix
@@ -74,7 +70,11 @@
 
         <t-notify type="error" id="notify"></t-notify>
 
-        <content select="t-header"></content>
+        <!-- content tag to insert header component-->
+        <content select=".t-header"></content>
+
+        <!-- content tag to insert decorator component -->
+        <content select=".decorator"></content>
 
         <div class="layout vertical">
             <template 
@@ -84,7 +84,7 @@
                 as="passenger">
 
                     <t-section-header 
-                        label="[[passenger.header]]">
+                        label="{{_getHeader(index, passenger.header)}}">
                     </t-section-header>
 
                     <t-passenger-segment
@@ -96,40 +96,16 @@
                         gender="{{passenger.genderString}}"
                         suffix="{{passenger.suffix}}"
                         date-of-birth="{{passenger.dob}}"
-                        hide-middle-name="[[hideMiddleName]]"
-                        hide-suffix="[[hideSuffix]]"
-                        hide-title="[[hideTitle]]"
-                        hide-date-of-birth="[[hideDateOfBirth]]"
-                        hide-gender="{{hideGender}}"
+                        hide-middle-name="{{_isHidden(passenger, 'middleName')}}"
+                        hide-suffix="{{_isHidden(passenger, 'suffix')}}"
+                        hide-title="{{_isHidden(passenger, 'title')}}"
+                        hide-date-of-birth="{{_isHidden(passenger, 'dob')}}"
+                        hide-gender="[[hideGender]]"
                         min-age="[[passenger.minAge]]"
                         max-age="[[passenger.maxAge]]"
                         departure-date="[[departureDate]]">
                     </t-passenger-segment>
-
-                    <template is="dom-if" if="[[isPassportRequired]]">
-                        <div class="vertical-margin layout">
-                            <t-passport-info 
-                                issue-country={{passenger.PassportInfo.IssuingCountry}}
-                                nationality-country="{{passenger.PassportInfo.NationalityCountry}}"
-                                passport-number="{{passenger.PassportInfo.PassportNumber}}"
-                                date-of-expiry="{{passenger.PassportInfo.ExpiryDateString}}"
-                                countries="[[countries.result]]">                           
-                            </t-passport-info>
-                        </div>
-                    </template>
-
-                    <template is="dom-if" if="{{_isFlight(passenger.type)}}">
-                        <div class="vertical-margin layout">
-                            <t-frequent-flyer
-                                passenger-id="[[index]]" 
-                                chosen-programs="[[passenger.optedPrograms]]" 
-                                airline-list="[[airlineList]]" 
-                                frequent-flyer-url="[[frequentFlyerUrl]]">
-                            </t-frequent-flyer>
-                        </div>
-                    </template>
-
-            </template>
+            </template>            
         </div>
 
         <t-communication
@@ -140,7 +116,7 @@
         <t-button 
             id="savePassengers"
             class="primary row" 
-            on-click="savePassengerData" 
+            on-click="_savePassengerData" 
             type="button" 
             label="continue">               
         </t-button>
@@ -158,10 +134,10 @@
 
         <t-sessionstorage
             id="sessionStore"
-            key="Car_Passenger_Info"
+            key="[[sessionKey]]"
             api-url-format="[[apiUrlFormat]]"
-            on-t-sessionstorage-save-success="onSessionSave"
-            on-t-sessionstorage-load-success="onSessionLoad">
+            on-t-sessionstorage-save-success="_onSessionSave"
+            on-t-sessionstorage-load-success="_onSessionLoad">
         </t-sessionstorage>
     </template>
 
@@ -170,37 +146,15 @@
         (function () {
 
             'use strict'
-
-            var passenger = {
-                title: "",
-                firstName: "",
-                middleName: "",
-                lastName: "",
-                suffix: "",
-                dob: "",
-                gender: "",
-                type: "",
-                emailId: "",
-                header: ""
-            };
-            
             Polymer({
 
                 is: 't-passenger-info-page',
 
                 behaviors: [
-                    TravelNxt.Behaviors.PageBehavior,
-                    TravelNxt.Behaviors.ActivityPageBehavior
+                    TravelNxt.Behaviors.PageBehavior
                 ],
 
                 properties: {
-
-                    /*
-                     * <p>This property holds the value of product type e.g. hotel</p>
-                    */
-                    product: {
-                        type: String
-                    },
 
                     /*
                      * <p>This object holds the value of saved passenger information</p>
@@ -212,54 +166,6 @@
                     },
 
                     /*
-                     * <p>Flag to toggle passport details view</p>
-                    */
-                    isPassportRequired: {
-                        type: Boolean,
-                        value: false
-                    },
-
-                    /**
-                     * Pass true to hide MiddleName
-                    */
-                    hideMiddleName: {
-                        type: Boolean,
-                        value: false
-                    },
-
-                    /**
-                     * Pass true to hide Suffix
-                     */
-                    hideSuffix: {
-                        type: Boolean,
-                        value: false
-                    },
-
-                    /**
-                     * Pass true to hide Title
-                     */
-                    hideTitle: {
-                        type: Boolean,
-                        value: false
-                    },
-
-                    /**
-                     * Pass true to hide DateOfBirth
-                     */
-                    hideDateOfBirth: {
-                        type: Boolean,
-                        value: false
-                    },
-
-                    /**
-                     * Pass true to hide Gender
-                     */
-                    hideGender: {
-                        type: Boolean,
-                        value: false
-                    },
-
-                    /*
                      * <p>This property sets the title for primary passenger</p>
                     */
                     primaryHeader: {
@@ -267,28 +173,11 @@
                         value:'Adult 1'
                     },
 
-                    /**
-                     * Number of adults
-                     */
-                    adultCount: {
-                        type: Number,
-                        value: 1
-                    },
-
-                    /**
-                     * Number of children
-                     */
-                    childCount: {
-                        type: Number,
-                        value: 0
-                    },
-
-                    /**
-                     * Number of Infants
-                     */
-                    infantCount: {
-                        type: Number,
-                        value: 0
+                    /*
+                     * <p>This property hides the gender information in passenegr segment</p>
+                    */
+                    hideGender : {
+                        type: Boolean                        
                     },
 
                     /**
@@ -300,52 +189,59 @@
                     },
 
                     /**
-                     * Provides passengerwise minimum & maximum age mappings
-                     * This object stores a property for each passenger type.
-                     * key of this property is `passenger type` & value is an object with minimum and maximum age.
-                     * Refer description for sample object structure
+                     * This is the value for session key.
                      */
-                    ageMappings: {
-                        type: Object
+                    sessionKey: {
+                        type: String,
+                        value: 'Passenger_Info'
                     }
                 },
 
                 observers: [
-                    '_visibleChange(visible)'
+                    '__visibleChange(visible)',
+                    '__pageLoad(passengerInfo)'
                 ],
 
                 /*
                  * <p>this method gets called when page becomes visible</p>
                 */
-                _visibleChange: function (visible) {
+                __visibleChange: function (visible) {
+
                     this.$.savePassengers.disabled = true;
-                    if (visible) {
-                        this.$.sessionStore.load();
-                    }
+
                     setTimeout(function () {                        
                         this.$.savePassengers.disabled = false;
                     }.bind(this), 10)
                 },
 
+                __pageLoad: function (passengerInfo) {
+
+                    if (!passengerInfo) {
+                        return;
+                    }
+
+                    // this.$.sessionStore.loaded = false;
+                    // this.$.sessionStore.load();
+                },
+
                 /*
                  * <p>This is the success event handler for `t-sessionstorage` save event</p>
                 */
-                onSessionLoad: function () {
-                    if (this.$.sessionStore.value) {
-                        this.passengerInfo = this.$.sessionStore.value;
-                    } else{
-                        this._buildPassengerInfo();
-                    }
+                _onSessionLoad: function () {
+                    this._updatePassengerList();
+                },
 
-                    if (this.primaryHeader && this.passengerInfo && this.passengerInfo.passengerList) {
-                        this.passengerInfo.passengerList[0].header = this.primaryHeader;
-                    }
+                /*
+                 * <p>This methods updates the passenger list as per the current data stored in `passengerInfo` & `sessionStore`</p>
+                */
+                _updatePassengerList: function () {
+                    //needs to implement this
                 },
 
                 /*
                  * <p>This is the success event handler for `t-sessionstorage` load event</p>
                 */
-                onSessionSave:function () {
+                _onSessionSave:function () {
                     if (this.$.sessionStore.value) {
                         this.passengerInfo = this.$.sessionStore.value;
                         this.fire('passenger-save-success');
@@ -353,103 +249,27 @@
                 },
 
                 /*
-                 * <p>Checks if the prodcut is flight</p>
+                 * <p>Event handler called on save button click</p>
                 */
-                _isFlight: function (type) {
-                    return type.toLowerCase() === 'flight';
+                _savePassengerData: function () {
+                    if (this.validate()) {
+                        this.$.sessionStore.value = this.passengerInfo;
+                        this.$.sessionStore.save();
+                    }
                 },
 
                 /*
-                 * <p>Builds passenger info as per selected product</p>
+                 * <p>Checks if property in passenger segment needs to be kept hidden</p>
                 */
-                _buildPassengerInfo: function () {
-
-                    var passengerList = [];
-
-                    passengerList = this._getAdultData(passengerList);
-                    passengerList = this._getChildrenData(passengerList);
-                    passengerList = this._getInfantData(passengerList);
-
-                    this.passengerInfo = {
-                        passengerList: passengerList,
-                        phone: '',
-                        email:''
-                    };
+                _isHidden: function (passenger, property) {
+                    return passenger[property] === undefined;
                 },
 
                 /*
-                 * <p>Builds data for all adults</p>
+                 * <p>Overrides the default header value by the one specified in `primaryHeader`</p>
                 */
-                _getAdultData: function (passengerList) {
-
-                    //atleast 1 adult has to be there
-                    if (!this.adultCount) {
-                        this.adultCount = 1;
-                    }
-
-
-                    for (var i = 1; i <= this.adultCount; i++) {
-                        var newPassenger = Object.create(passenger);
-                        newPassenger.type = 'Adult';
-                        this._setAgeRange(newPassenger);
-                        newPassenger.header = newPassenger.type + ' ' + i;
-                        passengerList.push(newPassenger);
-                    }
-                    return passengerList;
-                },
-
-                /*
-                 * <p>Builds data for all children</p>
-                */
-                _getChildrenData: function (passengerList) {
-                    if (!this.childCount) {
-                        return passengerList;
-                    }
-
-                    for (var i = 1; i <= this.childCount; i++) {
-                        var newPassenger = Object.create(passenger);
-                        newPassenger.type = 'Child';
-                        this._setAgeRange(newPassenger);
-                        newPassenger.header = newPassenger.type + ' ' + i;
-                        passengerList.push(newPassenger);
-                    }
-                    return passengerList;
-                },
-
-                /*
-                 * <p>Builds data for all infants</p>
-                */
-                _getInfantData: function (passengerList) {
-                    if (!this.infantCount) {
-                        return passengerList;
-                    }
-
-                    for (var i = 1; i <= this.infantCount; i++) {
-                        var newPassenger = Object.create(passenger);
-                        newPassenger.type = 'Infant';
-                        this._setAgeRange(newPassenger);
-                        newPassenger.header = newPassenger.type + ' ' + i;
-                        passengerList.push(newPassenger);
-                    }
-                    return passengerList;
-                },
-
-                /*
-                 * <p>Checks if the prodcut is flight</p>
-                */
-                _setAgeRange: function (passenger) {
-                    if (!this.ageMappings) {
-                        return;
-                    }
-
-                    var mapping = this.ageMappings[passenger.type.toLowerCase()];
-
-                    if (!mapping) {
-                        return;
-                    }
-
-                    passenger.minAge = mapping.minAge;
-                    passenger.maxAge = mapping.maxAge;
+                _getHeader: function (index, header) {
+                    return index === 0 && this.primaryHeader ? this.primaryHeader : header;
                 },
 
                 /*
@@ -465,21 +285,9 @@
                     })
                     isValid = this.querySelector('t-communication').validate() && isValid;
                     return isValid;
-                },
-
-                /*
-                 * <p>Event handler called on save button click</p>
-                */
-                savePassengerData: function () {
-                    if (this.validate()) {
-                        this.$.sessionStore.value = this.passengerInfo;
-                        this.passengerInfo = null;
-                        this.$.sessionStore.save();
-                    }
                 }
             });
 
         })();
-
     </script>
 </dom-module>
