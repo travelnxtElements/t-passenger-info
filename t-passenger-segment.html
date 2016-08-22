@@ -241,6 +241,10 @@
                         var minDate = new Date(date.setFullYear(date.getFullYear() - (this.maxAge || 12)));
                         minDate = minDate.setDate(minDate.getDate() + 1);
                         return new Date(minDate);
+                    case 'adult':
+                        var minDate = new Date(date.setFullYear(date.getFullYear() - (this.maxAge || 65)));
+                        minDate = minDate.setDate(minDate.getDate() + 1);
+                        return new Date(minDate);
                     case 'infant':
                         return new Date(date.setFullYear(date.getFullYear() - (this.maxAge || 2)));
 
@@ -253,6 +257,11 @@
                     case 'adult':
                         if (!this.minAge && this.minAge !== 0) {
                             this.minAge = 12;
+                        }
+                        return new Date(date.setFullYear(date.getFullYear() - this.minAge));
+                    case 'senior':
+                        if (!this.minAge && this.minAge !== 0) {
+                            this.minAge = 65;
                         }
                         return new Date(date.setFullYear(date.getFullYear() - this.minAge));
                     case 'child':
@@ -271,11 +280,13 @@
             _listTitles: function (type) {
                 switch (type.toLowerCase()) {
                     case 'adult':
+                    case 'senior':
                         return ["Mr", "Ms", "Mrs"];
                     case 'child':
+                    case 'infant':
                         return ["Master", "Miss"];
                     default:
-                        return ["Master", "Miss"];
+                        throw Error("Passenger type not supported");
 
                 }
             },
