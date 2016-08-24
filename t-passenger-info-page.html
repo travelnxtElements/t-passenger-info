@@ -158,6 +158,23 @@
 
                 properties: {
 
+                    /**
+                     * Observer parameter for page load observer function
+                     * @type {Object}
+                     */
+                    constructorObj: {
+                        type: Object
+                    },
+
+                    /**
+                     * Private copy of observer parameter for page load observer function
+                     * @type {Object}
+                     */
+                    _constructorObj: {
+                        type: Object,
+                        readOnly: true
+                    },
+
                     /*
                      * <p>This object holds the value of saved passenger information</p>
                      * <p>It overrides behavior property</p>
@@ -200,31 +217,21 @@
                 },
 
                 observers: [
-                    '__visibleChange(visible)',
-                    '__pageLoad(passengerInfo)'
+                    '__pageLoad(visible, constructorObj)'
                 ],
 
-                /*
-                 * <p>this method gets called when page becomes visible</p>
-                */
-                __visibleChange: function (visible) {
+                __pageLoad: function (visible, constructorObj) {
 
-                    this.$.savePassengers.disabled = true;
-
-                    setTimeout(function () {                        
-                        this.$.savePassengers.disabled = false;
-                    }.bind(this), 10)
-                },
-
-                __pageLoad: function (passengerInfo) {
-
-                    if (!passengerInfo) {
+                    if (!visible || !this.passengerInfo || !constructorObj || !this._isConstructorChanged()) {
                         return;
                     }
 
-                    // this.$.sessionStore.loaded = false;
-                    // this.$.sessionStore.value = null;
-                    // this.$.sessionStore.load();
+                    //update private copy
+                    this._set_constructorObj(constructorObj)
+
+                    this.$.sessionStore.loaded = false;
+                    this.$.sessionStore.value = null;
+                    this.$.sessionStore.load();
                 },
 
                 /*
