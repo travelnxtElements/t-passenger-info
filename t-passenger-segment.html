@@ -57,13 +57,24 @@
             </div>
             <template is="dom-if" if=[[!hideMiddleName]]>
                 <div class="vertical-margin layout horizontal center">
-                    <t-input id="middleName" class="flex" label="Middle Name"pattern="^[a-zA-Z\d.' ]+" auto-validate value="{{middleName}}"></t-input>
+                    <t-input id="middleName" class="flex" label="Middle Name" pattern="^[a-zA-Z\d.' ]+" auto-validate value="{{middleName}}"></t-input>
                 </div>
             </template>
             <div class="vertical-margin layout horizontal center">
                 <t-input id="lastName" class="flex" label="Last Name" error-message="You missed this." pattern="^[a-zA-Z\d.' ]+" required auto-validate value="{{lastName}}"></t-input>
                 <template is="dom-if" if=[[!hideSuffix]]>
                     <t-input id="suffix" class="suffix" label="Suffix" value="{{suffix}}"></t-input>
+                </template>
+                <template is="dom-if" if=[[!hideAge]]>
+                    <t-dropdown
+                        id="age"
+                        label="Age"
+                        class="suffix"
+                        error-message="Select age"
+                        selected-item="{{age}}"
+                        dropdown-array="[[ageArray]]"
+                        required>
+                    </t-dropdown>
                 </template>
             </div>
             <div class="vertical-margin layout horizontal center center-justified">
@@ -126,6 +137,14 @@
                 },
 
                 /**
+                 * Set or get the age of the passenger.
+                 */
+                age: {
+                    type: String,
+                    notify: true
+                },
+
+                /**
                  * Set or get the title of the form.
                  */
                 title: {
@@ -182,7 +201,17 @@
                  */
                 hideDateOfBirth: {
                     type: Boolean,
-                    value: false
+                    value: false,
+                    observer: '_hideAge'
+                },
+
+                /**
+                 * Pass true to hide Age
+                 */
+                hideAge: {
+                    type: Boolean,
+                    value: false,
+                    observer: '_hideDob'
                 },
 
                 /**
@@ -216,8 +245,19 @@
                  */
                 maxAge: {
                     type: Number
+                },
+
+                /**
+                 * Age array with age values
+                 */
+                ageArray: {
+                    type: Array                    
                 }
             },
+
+            observers: [
+                '_ageRangeChanged(minAge, maxAge)'
+            ],
 
             ready: function () {
                 this._setCalendar();
@@ -275,6 +315,42 @@
                         return new Date();
 
                 }
+            },
+
+            /**
+             * It hides dob calender if age dropdown is visible
+             */
+            _hideDob: function () {
+                if (!this.hideAge) {
+                    this.hideDateOfBirth = true;
+                }
+            },
+
+            /**
+             * It hides age dropdown if dob calender is visible
+             */
+            _hideAge: function () {
+                if (!this.hideDateOfBirth) {
+                    this.hideAge = true;
+                }
+            },
+
+            _ageRangeChanged: function (minAge, maxAge) {
+                if (minAge === null || minAge === undefined || !maxAge) {
+                    return;
+                }
+
+                if (minAge >= maxAge) {
+                    return;
+                }
+
+                ageArray = [];
+
+                for (var i = minAge; i <= maxAge; i++) {
+                    ageArray.push(i.toString());
+                }
+
+                this.ageArray = ageArray;
             },
 
             _listTitles: function (type) {
