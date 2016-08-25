@@ -348,9 +348,10 @@
                         return;
                     }
                     var isValid = true;
-                    this.querySelectorAll('t-passenger-segment').forEach(function (item) {
-                        item.validate() && isValid;
-                    })
+                    var paxSegments = this.querySelectorAll('t-passenger-segment');
+                    for (var i = 0; i < paxSegments.length; i++) {                        
+                        paxSegments[i].validate() && isValid;                        
+                    }
                     isValid = this.querySelector('t-communication').validate() && isValid;
                     return isValid;
                 }
