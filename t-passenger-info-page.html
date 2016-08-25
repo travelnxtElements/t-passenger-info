@@ -80,7 +80,7 @@
             <template 
                 id="list" 
                 is="dom-repeat" 
-                items="[[passengerInfo.passengerList]]" 
+                items="[[_passengerList]]" 
                 as="passenger">
 
                     <t-section-header 
@@ -213,12 +213,23 @@
                     sessionKey: {
                         type: String,
                         value: 'Passenger_Info'
-                    }
+                    },
+
+                    _passengerList: Array
                 },
 
                 observers: [
-                    '__pageLoad(visible, constructorObj)'
+                    '__pageLoad(visible, constructorObj)',
+                    '__populatePassengers(passengerInfo.passengerList)'
                 ],
+
+                __populatePassengers: function (passengerList) {
+                    var comp = this;
+                    this._passengerList = [];
+                    setTimeout(function () {
+                        comp._passengerList = passengerList;
+                    }, 100)
+                },
 
                 __pageLoad: function (visible, constructorObj) {
 
@@ -321,6 +332,7 @@
                 */
                 _savePassengerData: function () {
                     if (this.validate()) {
+                        this.passengerInfo.passengerList = this._passengerList;
                         this.$.sessionStore.value = this.passengerInfo;
                         this.$.sessionStore.save();
                     }
