@@ -277,7 +277,7 @@
 
                     Object.keys(currentList).forEach(function (paxType) {
                         for (var i = 0; i < currentList[paxType].length; i++) {
-                            if (sessionList[paxType][i]) {
+                            if (sessionList[paxType] && sessionList[paxType][i]) {
                                 newList.push(sessionList[paxType][i]);
                             } else {
                                 newList.push(currentList[paxType][i]);
