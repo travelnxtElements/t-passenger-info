@@ -80,7 +80,7 @@
             <template 
                 id="list" 
                 is="dom-repeat" 
-                items="[[_passengerList]]" 
+                items="[[passengerDetails.passengerList]]" 
                 as="passenger">
 
                     <t-section-header 
@@ -111,8 +111,8 @@
         </div>
 
         <t-communication
-            phone="{{passengerInfo.phone}}" 
-            email="{{passengerInfo.email}}">                
+            phone="{{passengerDetails.phone}}" 
+            email="{{passengerDetails.email}}">                
         </t-communication>
 
         <t-button 
@@ -176,7 +176,7 @@
                     },
 
                     /*
-                     * <p>This object holds the value of saved passenger information</p>
+                     * <p>This object holds info of number and type of passengers to be rendered</p>
                      * <p>It overrides behavior property</p>
                     */
                     passengerInfo: {
@@ -212,25 +212,23 @@
                      */
                     sessionKey: {
                         type: String,
-                        value: 'Passenger_Info'
+                        value: 'Passenger_Details'
                     },
 
-                    _passengerList: Array
+                    /**
+                     * This stores the passenger details information with contact details
+                     * @type {Object}
+                     */
+                    passengerDetails: {
+                        type: Object,
+                        notify: true
+                    }
                 },
 
                 observers: [
-                    '__pageLoad(visible, constructorObj)',
-                    '__populatePassengers(passengerInfo.passengerList)'
+                    '__pageLoad(visible, constructorObj)'
                 ],
-
-                __populatePassengers: function (passengerList) {
-                    var comp = this;
-                    this._passengerList = [];
-                    setTimeout(function () {
-                        comp._passengerList = passengerList;
-                    }, 100)
-                },
-
+                
                 __pageLoad: function (visible, constructorObj) {
 
                     if (!visible || !this.passengerInfo || !constructorObj || !this._isConstructorChanged()) {
@@ -249,29 +247,36 @@
                  * <p>This is the success event handler for `t-sessionstorage` save event</p>
                 */
                 _onSessionLoad: function () {
-                    this._updatePassengerList();
+                    this._updatePassengerDetails();
                 },
 
                 /*
                  * <p>This methods updates the passenger list as per the current data stored in `passengerInfo` & `sessionStore`</p>
                 */
-                _updatePassengerList: function () {
+                _updatePassengerDetails: function () {
+                    this.passengerDetails = {};
                     var sessionPassengers = this.$.sessionStore.value;
-                    if (!sessionPassengers || !sessionPassengers.passengerList || !sessionPassengers.passengerList.length) {
-                        return false;
-                    }
-
-                    var paxTypes = this._getPassengerTypes(this.passengerInfo.passengerList);
-                    var sessionPaxTypes = this._getPassengerTypes(sessionPassengers.passengerList);
 
                     var paxInfo = {
-                        email: sessionPassengers.email,
-                        phone: sessionPassengers.phone,
+                        email: '',
+                        phone: '',
                         passengerList: []
                     }
 
-                    this._pushPassengers(paxInfo.passengerList, sessionPaxTypes, paxTypes);
-                    this.passengerInfo = paxInfo;
+                    if (sessionPassengers && sessionPassengers.passengerList) {
+                        var sessionPaxTypes = this._getPassengerTypes(sessionPassengers.passengerList);
+                        var paxTypes = this._getPassengerTypes(this.passengerInfo.passengerList);
+                        this._pushPassengers(paxInfo.passengerList, sessionPaxTypes, paxTypes);
+                        paxInfo.email = sessionPassengers.email;
+                        paxInfo.phone = sessionPassengers.phone;
+                    } else {
+                        paxInfo.passengerList = this.passengerInfo.passengerList;
+                    }
+
+                    // Time out required to set dropdowns of age and title correctly
+                    setTimeout(function () {
+                        this.passengerDetails = paxInfo;
+                    }.bind(this), 100)
                 },
 
                 /**
@@ -322,7 +327,7 @@
                 */
                 _onSessionSave:function () {
                     if (this.$.sessionStore.value) {
-                        this.passengerInfo = this.$.sessionStore.value;
+                        this.passengerDetails = this.$.sessionStore.value;
                         this.fire('passenger-save-success');
                     }
                 },
@@ -332,8 +337,7 @@
                 */
                 _savePassengerData: function () {
                     if (this.validate()) {
-                        this.passengerInfo.passengerList = this._passengerList;
-                        this.$.sessionStore.value = this.passengerInfo;
+                        this.$.sessionStore.value = this.passengerDetails;
                         this.$.sessionStore.save();
                     }
                 },
