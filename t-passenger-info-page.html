@@ -8,6 +8,7 @@
 <link rel="import" href="../iron-ajax/iron-ajax.html" />
 <link rel="import" href="../iron-ajax/iron-request.html">
 <link rel="import" href="../t-behavior/t-page-behavior.html">
+<link rel="import" href="../t-behavior/t-session-behavior.html"/>
 
 <!--
     <h3>Details:</h3>
@@ -34,14 +35,14 @@
     <h3>Example:</h3>
 
         <t-passenger-info-page
-            id="passengerInfo"
+            id="passengerCount"
             name="paxInfo"
             hide-gender
             hide-date-of-birth
             hide-suffix
             hide-middle-name
             api-url-format="[[apiUrlFormat]]"
-            passenger-info="{{passengerInfo}}"
+            passenger-info="{{passengerCount}}"
             on-passenger-save-success="_goToPaymentPage">
             <t-header
                 icon="bgv:arrow-left"
@@ -118,7 +119,7 @@
         <t-button 
             id="savePassengers"
             class="primary row" 
-            on-click="_savePassengerData" 
+            on-tap="_savePassengerData" 
             type="button" 
             label="continue">               
         </t-button>
@@ -136,10 +137,9 @@
 
         <t-sessionstorage
             id="sessionStore"
-            key="[[sessionKey]]"
             api-url-format="[[apiUrlFormat]]"
-            on-t-sessionstorage-save-success="_onSessionSave"
-            on-t-sessionstorage-load-success="_onSessionLoad">
+            on-t-sessionstorage-load-success="_onSessionGet"
+            on-t-sessionstorage-save-success="_onSessionSave">
         </t-sessionstorage>
     </template>
 
@@ -153,35 +153,37 @@
                 is: 't-passenger-info-page',
 
                 behaviors: [
-                    TravelNxt.Behaviors.PageBehavior
+                    TravelNxt.Behaviors.PageBehavior,
+                    TravelNxt.Behaviors.SessionBehavior
                 ],
 
                 properties: {
 
                     /**
-                     * Observer parameter for page load observer function
+                     * This stores the passenger details information with contact details
                      * @type {Object}
                      */
-                    constructorObj: {
-                        type: Object
+                    _paxDetails: {
+                        type: Object,
+                        readOnly: true
                     },
 
                     /**
-                     * Private copy of observer parameter for page load observer function
+                     * This stores the passenger details information with contact details
                      * @type {Object}
                      */
-                    _constructorObj: {
+                    passengerDetails: {
                         type: Object,
-                        readOnly: true
+                        notify: true
                     },
 
                     /*
                      * <p>This object holds info of number and type of passengers to be rendered</p>
                      * <p>It overrides behavior property</p>
                     */
-                    passengerInfo: {
+                    passengerCount: {
                         type: Object,
-                        notify: true
+                        observer: '__updatePaxCountInSession'
                     },
 
                     /*
@@ -212,50 +214,66 @@
                      */
                     sessionKey: {
                         type: String,
-                        value: 'Passenger_Details'
-                    },
-
-                    /**
-                     * This stores the passenger details information with contact details
-                     * @type {Object}
-                     */
-                    passengerDetails: {
-                        type: Object,
-                        notify: true
+                        value: ''
                     }
                 },
 
+                listeners: {
+                    'session-get-complete': '_updatePage',
+                    'session-set-complete': '_redirect'
+                },
+
                 observers: [
-                    '__pageLoad(visible, constructorObj)'
+                    '__pageLoad(visible)'
                 ],
                 
-                __pageLoad: function (visible, constructorObj) {
+                __pageLoad: function (visible) {
 
-                    if (!visible || !this.passengerInfo || !constructorObj || !this._isConstructorChanged()) {
+                    if (!visible) {
                         return;
                     }
 
-                    //update private copy
-                    this._set_constructorObj(constructorObj)
+                    this._syncSession();
+                },
 
-                    this.$.sessionStore.loaded = false;
-                    this.$.sessionStore.value = null;
-                    this.$.sessionStore.load();
+                __updatePaxCountInSession : function (passengerCount) {
+
+                    if (!passengerCount) {
+                        return;
+                    }
+
+                    this._data = [{
+                        key: this.sessionKey + '_Passenger_Count',
+                        value: passengerCount
+                    }];
+
+                    this.setSession();                    
                 },
 
                 /*
                  * <p>This is the success event handler for `t-sessionstorage` save event</p>
                 */
-                _onSessionLoad: function () {
-                    this._updatePassengerDetails();
+                _updatePage: function () {
+                    this._updatePassengerDetails();                                    
+                },
+
+                _syncSession: function () {
+                    this._data = [{
+                        key: this.sessionKey + '_Passenger_Details',
+                        propertyName: 'passengerDetails'
+                    }, {
+                        key: this.sessionKey + '_Passenger_Count',
+                        propertyName: 'passengerCount'
+                    }];
+
+                    this.getSession();
                 },
 
                 /*
-                 * <p>This methods updates the passenger list as per the current data stored in `passengerInfo` & `sessionStore`</p>
+                 * <p>This methods updates the passenger list as per the current data stored in `passengerCount` & `sessionStore`</p>
                 */
                 _updatePassengerDetails: function () {
-                    this.passengerDetails = {};
-                    var sessionPassengers = this.$.sessionStore.value;
+                    var sessionPassengers = this.passengerDetails;
 
                     var paxInfo = {
                         email: '',
@@ -265,13 +283,15 @@
 
                     if (sessionPassengers && sessionPassengers.passengerList) {
                         var sessionPaxTypes = this._getPassengerTypes(sessionPassengers.passengerList);
-                        var paxTypes = this._getPassengerTypes(this.passengerInfo.passengerList);
+                        var paxTypes = this._getPassengerTypes(this.passengerCount.passengerList);
                         this._pushPassengers(paxInfo.passengerList, sessionPaxTypes, paxTypes);
                         paxInfo.email = sessionPassengers.email;
                         paxInfo.phone = sessionPassengers.phone;
                     } else {
-                        paxInfo.passengerList = this.passengerInfo.passengerList;
+                        paxInfo.passengerList = this.passengerCount.passengerList;
                     }
+
+                    this.passengerDetails= {};
 
                     // Time out required to set dropdowns of age and title correctly
                     setTimeout(function () {
@@ -323,22 +343,22 @@
                 },
 
                 /*
-                 * <p>This is the success event handler for `t-sessionstorage` load event</p>
-                */
-                _onSessionSave:function () {
-                    if (this.$.sessionStore.value) {
-                        this.passengerDetails = this.$.sessionStore.value;
-                        this.fire('passenger-save-success');
-                    }
-                },
-
-                /*
                  * <p>Event handler called on save button click</p>
                 */
                 _savePassengerData: function () {
                     if (this.validate()) {
-                        this.$.sessionStore.value = this.passengerDetails;
-                        this.$.sessionStore.save();
+                        this._data = [{
+                            key: this.sessionKey + '_Passenger_Details',
+                            value: this.passengerDetails
+                        }];
+
+                        this.setSession();
+                    }
+                },
+
+                _redirect: function () {
+                    if (this.$.sessionStore.key === this.sessionKey +  '_Passenger_Details') {
+                        this.fire('passenger-save-success');
                     }
                 },
 
