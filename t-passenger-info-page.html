@@ -314,6 +314,13 @@
                     Object.keys(currentList).forEach(function (paxType) {
                         for (var i = 0; i < currentList[paxType].length; i++) {
                             if (sessionList[paxType] && sessionList[paxType][i]) {
+
+                                if (sessionList[paxType][i].age < currentList[paxType][i].minAge && sessionList[paxType][i].age > currentList[paxType][i].maxAge){
+                                    sessionList[paxType][i].age = null;
+                                }
+
+                                sessionList[paxType][i].maxAge = currentList[paxType][i].maxAge;
+                                sessionList[paxType][i].minAge = currentList[paxType][i].minAge;
                                 newList.push(sessionList[paxType][i]);
                             } else {
                                 newList.push(currentList[paxType][i]);
@@ -386,7 +393,7 @@
                     var isValid = true;
                     var paxSegments = this.querySelectorAll('t-passenger-segment');
                     for (var i = 0; i < paxSegments.length; i++) {                        
-                        paxSegments[i].validate() && isValid;                        
+                        isValid = paxSegments[i].validate() && isValid;
                     }
                     isValid = this.querySelector('t-communication').validate() && isValid;
                     return isValid;
