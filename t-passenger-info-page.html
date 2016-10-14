@@ -1,5 +1,7 @@
 <link rel="import" href="../polymer/polymer.html" />
+<link rel="import" href="t-frequent-flyer.html">
 <link rel="import" href="t-passenger-segment.html">
+<link rel="import" href="t-passport-info.html">
 <link rel="import" href="t-communication.html">
 <link rel="import" href="../t-sessionstorage/t-sessionstorage.html">
 <link rel="import" href="../t-button/t-button.html">
@@ -9,6 +11,7 @@
 <link rel="import" href="../iron-ajax/iron-request.html">
 <link rel="import" href="../t-behavior/t-page-behavior.html">
 <link rel="import" href="../t-behavior/t-session-behavior.html"/>
+<link rel="import" href="../iron-ajax/iron-request.html">
 
 <!--
     <h3>Details:</h3>
@@ -67,6 +70,9 @@
             t-section-header {
                 margin-bottom: 0;
             }
+            t-frequent-flyer {
+                padding: 0 10px;
+            }
         </style>
 
         <t-notify type="error" id="notify"></t-notify>
@@ -108,6 +114,28 @@
                         max-age="[[passenger.maxAge]]"
                         departure-date="[[departureDate]]">
                     </t-passenger-segment>
+
+                    <template is="dom-if" if="{{isPassportRequired}}">
+                        <div class="vertical-margin layout">
+                            <t-passport-info 
+                                issue-country={{passenger.PassportInfo.IssuingCountry}} 
+                                nationality-country="{{passenger.PassportInfo.NationalityCountry}}" 
+                                passport-number="{{passenger.PassportInfo.PassportNumber}}"
+                                date-of-expiry="{{passenger.PassportInfo.ExpiryDateString}}"
+                                countries="[[countries.result]]">
+                            </t-passport-info>
+                        </div>
+                    </template>
+                    <template is="dom-if" if="{{isFrequentFlyer}}">
+                        <div class="vertical-margin layout">
+                            <t-frequent-flyer 
+                                passenger-id="[[index]]"
+                                chosen-programs="[[passenger.optedPrograms]]"
+                                airline-list="[[airlineList]]"
+                                frequent-flyer-url="[[frequentFlyerUrl]]">
+                            </t-frequent-flyer>
+                        </div>
+                    </template>
             </template>            
         </div>
 
@@ -133,6 +161,16 @@
             handle-as="json" 
             content-type="application/json" 
             last-response="{{countries}}">                
+        </iron-ajax>
+        <iron-ajax 
+            id="frequentFlyerCall" 
+            method="POST"
+            url="[[frequentFlyerUrl]]"
+            headers='{"accept": "application/json"}'
+            content-type="application/json"
+            handle-as="json"
+            last-response="{{data}}"
+            on-response="_onLoyaltyResponse">
         </iron-ajax>
 
         <t-sessionstorage
@@ -186,19 +224,24 @@
                         observer: '__updatePaxCountInSession'
                     },
 
+                    itinerary: {
+                        type: Array,
+                        observer: '__updateAirlinesList'
+                    },
+
                     /*
                      * <p>This property sets the title for primary passenger</p>
                     */
                     primaryHeader: {
                         type: String,
-                        value:'Adult 1'
+                        value: 'Adult 1'
                     },
 
                     /*
                      * <p>This property hides the gender information in passenegr segment</p>
                     */
-                    hideGender : {
-                        type: Boolean                        
+                    hideGender: {
+                        type: Boolean
                     },
 
                     /**
@@ -215,7 +258,25 @@
                     sessionKey: {
                         type: String,
                         value: ''
-                    }
+                    },
+
+                    isPassportRequired: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    isFrequentFlyer: {
+                        type: Boolean,
+                        value: false
+                    },
+
+                    airlineList: {
+                        type: Array,
+                        notify: true,
+                        observer: '_getLoyaltyPrograms'
+                    },
+
+                    frequentFlyerUrl: String
                 },
 
                 listeners: {
@@ -226,7 +287,7 @@
                 observers: [
                     '__pageLoad(visible)'
                 ],
-                
+
                 __pageLoad: function (visible) {
 
                     if (!visible) {
@@ -236,9 +297,9 @@
                     this._syncSession();
                 },
 
-                __updatePaxCountInSession : function (passengerCount) {
+                __updatePaxCountInSession: function (passengerCount) {
 
-                    if (!passengerCount) {
+                    if (!passengerCount || this.visible) {
                         return;
                     }
 
@@ -247,14 +308,44 @@
                         value: passengerCount
                     }];
 
-                    this.setSession();                    
+                    this.setSession();
+                },
+
+                __updateAirlinesList: function (itinerary) {
+
+                    if (!itinerary || !itinerary.legs || this.visible) {
+                        return;
+                    }
+
+                    var airlines = [];
+                    var legs = itinerary.legs;
+                    for (var i = 0; i < legs.length; i++) {
+                        var segments = legs[i].segments;
+                        for (var j = 0; j < segments.length; j++) {
+                            var airline = {
+                                "code": itinerary.legs[i].segments[j].airline.code,
+                                "name": itinerary.legs[i].segments[j].airline.name
+                            };
+                            if (!airlines.find(function (aAirline) {
+                                return airline.code == aAirline.code;
+                            }))
+                                airlines.push(airline);
+                        }
+                    }
+
+                    this._data = [{
+                        key: this.sessionKey + '_Airlines_List',
+                        value: airlines
+                    }];
+
+                    this.setSession();
                 },
 
                 /*
                  * <p>This is the success event handler for `t-sessionstorage` save event</p>
                 */
                 _updatePage: function () {
-                    this._updatePassengerDetails();                                    
+                    this._updatePassengerDetails();
                 },
 
                 _syncSession: function () {
@@ -264,6 +355,9 @@
                     }, {
                         key: this.sessionKey + '_Passenger_Count',
                         propertyName: 'passengerCount'
+                    }, {
+                        key: this.sessionKey + '_Airlines_List',
+                        propertyName: 'airlineList'
                     }];
 
                     this.getSession();
@@ -291,7 +385,7 @@
                         paxInfo.passengerList = this.passengerCount.passengerList;
                     }
 
-                    this.passengerDetails= {};
+                    this.passengerDetails = {};
 
                     // Time out required to set dropdowns of age and title correctly
                     setTimeout(function () {
@@ -315,7 +409,7 @@
                         for (var i = 0; i < currentList[paxType].length; i++) {
                             if (sessionList[paxType] && sessionList[paxType][i]) {
 
-                                if (sessionList[paxType][i].age < currentList[paxType][i].minAge && sessionList[paxType][i].age > currentList[paxType][i].maxAge){
+                                if (sessionList[paxType][i].age < currentList[paxType][i].minAge && sessionList[paxType][i].age > currentList[paxType][i].maxAge) {
                                     sessionList[paxType][i].age = null;
                                 }
 
@@ -349,11 +443,96 @@
                     return paxTypes;
                 },
 
+                _getLoyaltyPrograms: function () {
+                    var component = this;
+                    if (component.airlineList && component.airlineList.length > 0) {
+                        component.airlineList.forEach(function (airline, index) {
+                            var airlines = [];
+                            airlines.push(airline.code);
+                            component._getLoyaltyProgramsFor(airlines, index);
+                        });
+                    }
+                },
+
+                _getLoyaltyProgramsFor: function (airlines, index) {
+                    var component = this;
+                    var airlineCodes = airlines;
+                    this.$.frequentFlyerCall.body = JSON.stringify(airlineCodes);
+                    this.$.frequentFlyerCall.generateRequest();
+                },
+
+                _onLoyaltyResponse: function () {
+                    var response = this.data;
+                    var airlineCode = JSON.parse(arguments[0].currentTarget.body)[0];
+
+                    var arrayIndex = -1;
+                    this.airlineList.forEach(function (airline, index) {
+                        if (airline.code.toLowerCase() === airlineCode.toLowerCase()) {
+                            arrayIndex = index;
+                            return;
+                        }
+                    });
+                    if (response.status.isSuccessful) {
+                        this.set('airlineList.' + arrayIndex + '.programs', response.result);
+                    } else {
+                        //remove airline from list if loyalty programs could not be fetched.
+                        this.splice('airlineList', arrayIndex, 1);
+                    }
+                    if (arrayIndex === this.airlineList.length - 1)
+                        this._setChosenLoyaltyProgramsForPassengers();
+                },
+
+                _setChosenLoyaltyProgramsForPassengers: function () {
+                    if (this.frequentFlyerDetails && this.frequentFlyerDetails.length > 0) {
+                        var component = this;
+
+                        this.passengerCount.passengerList.forEach(function (passenger, paxId) {
+                            var chosenPrograms = [];
+                            component.frequentFlyerDetails.forEach(function (ff) {
+                                if (ff.paxId === paxId) {
+                                    ff.redressNumber = component.passengerData[paxId].RedressNumber;
+                                    chosenPrograms.push(ff);
+                                }
+                            });
+                            component.set('passengerData.' + paxId + '.optedPrograms', chosenPrograms);
+                            if (paxId == component.passengerData.length - 1)
+                                component.fire('ff-programs-retrieved');
+                        });
+                    }
+
+                },
+
                 /*
                  * <p>Event handler called on save button click</p>
                 */
                 _savePassengerData: function () {
                     if (this.validate()) {
+                        if (this.sessionKey.toLowerCase == 'flight') {
+
+                            var frequentFlyerElements = [].slice.call(this.querySelectorAll('t-frequent-flyer'));
+                            var passportInfo = [].slice.call(this.querySelectorAll('t-passport-info'));
+
+                            if (this.isPassportRequired) {
+                                this.passengerDetails.passengerList.forEach(function (pax, index) {
+                                    pax.passportInfo = {
+                                        'expiryDateString': passportInfo[index].dateOfExpiry,
+                                        'issuingCountry': passportInfo[index].issueCountry,
+                                        'nationalityCountry': passportInfo[index].nationalityCountry,
+                                        'passportNumber': passportInfo[index].passportNumber,
+                                    }
+                                })
+                            }
+
+                            var frequentFlyerDetails = [];
+                            frequentFlyerElements.forEach(function (ff) {
+                                var programs = ff.getOptedPrograms();
+                                if (programs && programs.length > 0)
+                                    frequentFlyerDetails = frequentFlyerDetails.concat(programs);
+                            });
+
+                            var paxDetailsWithFF = this._handleRedressNumbers(this.passengerDetails, frequentFlyerDetails);
+                        }
+
                         this._data = [{
                             key: this.sessionKey + '_Passenger_Details',
                             value: this.passengerDetails
@@ -363,8 +542,23 @@
                     }
                 },
 
+                _handleRedressNumbers: function (paxDetails, ffDetails) {
+                    ffDetails.forEach(function (detail, index) {
+                        if (detail.redressNumber && detail.redressNumber.length > 0) {
+                            paxDetails[detail.paxId].RedressNumber = detail.redressNumber;
+                            delete detail['redressNumber'];
+                        }
+                    });
+
+                    var completeDetails = {
+                        'passengerDetails': paxDetails,
+                        'frequentFlyerDetails': ffDetails
+                    };
+                    return completeDetails;
+                },
+
                 _redirect: function () {
-                    if (this.$.sessionStore.key === this.sessionKey +  '_Passenger_Details') {
+                    if (this.$.sessionStore.key === this.sessionKey + '_Passenger_Details') {
                         this.fire('passenger-save-success');
                     }
                 },
@@ -392,7 +586,7 @@
                     }
                     var isValid = true;
                     var paxSegments = this.querySelectorAll('t-passenger-segment');
-                    for (var i = 0; i < paxSegments.length; i++) {                        
+                    for (var i = 0; i < paxSegments.length; i++) {
                         isValid = paxSegments[i].validate() && isValid;
                     }
                     isValid = this.querySelector('t-communication').validate() && isValid;
