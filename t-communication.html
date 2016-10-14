@@ -26,7 +26,9 @@
         }
         </style>
         <div class="layout vertical">
+            <template is="dom-if" if=[[!hideSectionHeader]]>
             <t-section-header label="Communication Details"></t-section-header>
+            </template>
             <div class="section">
                 <t-input id="phoneNumber" 
                     name="phoneNumber"
@@ -40,7 +42,7 @@
                 <t-input id="email"
                     name="email"
                     label="Email"
-                    pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$'
+                    pattern='[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$'
                     error-message="Invalid email."
                     required value="{{email}}">
                 </t-input>
@@ -59,7 +61,18 @@ Polymer({
         email: {
             type: String,
             notify: true
+        },
+        /**
+        * The property to hide/show section headers when not needed.
+        * @type {Boolean}
+        */
+        hideSectionHeader: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true,
+              
         }
+
     },
     validate: function() {
         var isValid = true;
