@@ -226,7 +226,7 @@
 
                     itinerary: {
                         type: Array,
-                        observer: '__updateAirlinesList'
+                        observer: '__updateItineraryDependencies'
                     },
 
                     /*
@@ -311,7 +311,17 @@
                     this.setSession();
                 },
 
-                __updateAirlinesList: function (itinerary) {
+                __updateItineraryDependencies: function (itinerary) {
+
+                    if (!itinerary || !itinerary.legs || this.visible) {
+                        return;
+                    }
+
+                    this._updateAirlinesList(itinerary);
+                    this.isPassportRequired = itinerary.isPassportRequired;
+                },
+
+                _updateAirlinesList: function (itinerary) {
 
                     if (!itinerary || !itinerary.legs || this.visible) {
                         return;
@@ -355,10 +365,18 @@
                     }, {
                         key: this.sessionKey + '_Passenger_Count',
                         propertyName: 'passengerCount'
-                    }, {
-                        key: this.sessionKey + '_Airlines_List',
-                        propertyName: 'airlineList'
                     }];
+
+                    if (this.sessionKey.toLowerCase() == 'flight') {
+                        this._data.push({
+                            key: this.sessionKey + '_Itinerary',
+                            propertyName: 'itinerary'
+                        });
+                        this._data.push({
+                            key: this.sessionKey + '_Airlines_List',
+                            propertyName: 'airlineList'
+                        });
+                    }
 
                     this.getSession();
                 },
@@ -507,7 +525,7 @@
                 */
                 _savePassengerData: function () {
                     if (this.validate()) {
-                        if (this.sessionKey.toLowerCase == 'flight') {
+                        if (this.sessionKey.toLowerCase() == 'flight') {
 
                             var frequentFlyerElements = [].slice.call(this.querySelectorAll('t-frequent-flyer'));
                             var passportInfo = [].slice.call(this.querySelectorAll('t-passport-info'));
@@ -545,16 +563,14 @@
                 _handleRedressNumbers: function (paxDetails, ffDetails) {
                     ffDetails.forEach(function (detail, index) {
                         if (detail.redressNumber && detail.redressNumber.length > 0) {
-                            paxDetails[detail.paxId].RedressNumber = detail.redressNumber;
+                            paxDetails.passengerList[detail.paxId].redressNumber = detail.redressNumber;
                             delete detail['redressNumber'];
+                            if (!paxDetails.passengerList[detail.paxId].memberships) {
+                                paxDetails.passengerList[detail.paxId].memberships = [];
+                            }
+                            paxDetails.passengerList[detail.paxId].memberships.push(detail);
                         }
                     });
-
-                    var completeDetails = {
-                        'passengerDetails': paxDetails,
-                        'frequentFlyerDetails': ffDetails
-                    };
-                    return completeDetails;
                 },
 
                 _redirect: function () {
