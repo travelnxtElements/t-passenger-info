@@ -276,6 +276,11 @@
                         observer: '_getLoyaltyPrograms'
                     },
 
+                    _iFFPopulated: {
+                        type: Boolean,
+                        value: false
+                    },
+
                     frequentFlyerUrl: String
                 },
 
@@ -355,6 +360,7 @@
                  * <p>This is the success event handler for `t-sessionstorage` save event</p>
                 */
                 _updatePage: function () {
+                    this._iFFPopulated = false;
                     this._updatePassengerDetails();
                 },
 
@@ -408,7 +414,35 @@
                     // Time out required to set dropdowns of age and title correctly
                     setTimeout(function () {
                         this.passengerDetails = paxInfo;
+                        setTimeout(function () {
+                            if (!this._iFFPopulated) {
+                                this._iFFPopulated = true;
+                                this._setChosenLoyaltyProgramsForPassengers(paxInfo);
+                            }
+                        }.bind(this), 100);
                     }.bind(this), 100)
+                },
+
+                _setChosenLoyaltyProgramsForPassengers: function (paxInfo) {
+                    if (!paxInfo.passengerList || !paxInfo.passengerList.length) {
+                        return;
+                    }
+                    var component = this;
+                    paxInfo.passengerList.forEach(function (passenger, paxId) {
+                        if (passenger.memberships && passenger.memberships.length) {
+                            var chosenPrograms = [];
+                            passenger.memberships.forEach(function (ff) {
+                                ff.redressNumber = passenger.redressNumber;
+                                chosenPrograms.push(ff);
+                            });
+                            //passenger.optedPrograms = chosenPrograms;
+                            component.set('passengerDetails.passengerList.' + paxId + '.optedPrograms', chosenPrograms);
+
+                            if (paxInfo.passengerList.length - 1 == paxId) {
+                                component.fire('ff-programs-retrieved');
+                            }
+                        }
+                    });
                 },
 
                 /**
@@ -496,28 +530,12 @@
                         //remove airline from list if loyalty programs could not be fetched.
                         this.splice('airlineList', arrayIndex, 1);
                     }
-                    if (arrayIndex === this.airlineList.length - 1)
-                        this._setChosenLoyaltyProgramsForPassengers();
-                },
-
-                _setChosenLoyaltyProgramsForPassengers: function () {
-                    if (this.frequentFlyerDetails && this.frequentFlyerDetails.length > 0) {
-                        var component = this;
-
-                        this.passengerCount.passengerList.forEach(function (passenger, paxId) {
-                            var chosenPrograms = [];
-                            component.frequentFlyerDetails.forEach(function (ff) {
-                                if (ff.paxId === paxId) {
-                                    ff.redressNumber = component.passengerData[paxId].RedressNumber;
-                                    chosenPrograms.push(ff);
-                                }
-                            });
-                            component.set('passengerData.' + paxId + '.optedPrograms', chosenPrograms);
-                            if (paxId == component.passengerData.length - 1)
-                                component.fire('ff-programs-retrieved');
-                        });
-                    }
-
+                    setTimeout(function () {
+                        if (!this._iFFPopulated) {
+                            this._iFFPopulated = true;
+                            this._setChosenLoyaltyProgramsForPassengers(paxInfo);
+                        }
+                    }.bind(this), 100);
                 },
 
                 /*
@@ -565,9 +583,7 @@
                         if (detail.redressNumber && detail.redressNumber.length > 0) {
                             paxDetails.passengerList[detail.paxId].redressNumber = detail.redressNumber;
                             delete detail['redressNumber'];
-                            if (!paxDetails.passengerList[detail.paxId].memberships) {
-                                paxDetails.passengerList[detail.paxId].memberships = [];
-                            }
+                            paxDetails.passengerList[detail.paxId].memberships = [];
                             paxDetails.passengerList[detail.paxId].memberships.push(detail);
                         }
                     });
