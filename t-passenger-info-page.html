@@ -12,6 +12,7 @@
 <link rel="import" href="../t-behavior/t-page-behavior.html">
 <link rel="import" href="../t-behavior/t-session-behavior.html"/>
 <link rel="import" href="../iron-ajax/iron-request.html">
+<link rel="import" href="../t-shared-lib/t-date-behavior.html">
 
 <!--
     <h3>Details:</h3>
@@ -93,8 +94,26 @@
                     <t-section-header 
                         label="{{_getHeader(index, passenger.header)}}">
                     </t-section-header>
+                    
+                    <div hidden$="[[!isLoggedInUser]]">
+                        <t-option-selector 
+                            id="selector"
+                            context="[[index]]"
+                            options-label="Choose Passenger"
+                            label-key="fullName"
+                            value-key="id"
+                            default-text="to prefill info from profile"
+                            post-selection-text="as passenger"
+                            add-new-text="passenger details to profile"
+                            add-new-label="Add New"
+                            add-new-value="5"
+                            options-list="[[_profilePaxList]]"
+                            on-selection-changed ="_updatePassenger">
+                        </t-option-selector>
+                    </div>
 
                     <t-passenger-segment
+                        id="passenger-[[index]]"
                         title="{{passenger.title}}"
                         first-name="{{passenger.firstName}}"
                         middle-name="{{passenger.middleName}}"
@@ -192,7 +211,8 @@
 
                 behaviors: [
                     TravelNxt.Behaviors.PageBehavior,
-                    TravelNxt.Behaviors.SessionBehavior
+                    TravelNxt.Behaviors.SessionBehavior,
+                    TravelNxt.Behaviors.DateBehavior
                 ],
 
                 properties: {
@@ -204,6 +224,11 @@
                     _paxDetails: {
                         type: Object,
                         readOnly: true
+                    },
+                    
+                    isLoggedInUser: {
+                        type: Boolean,
+                        value: false
                     },
 
                     /**
@@ -279,6 +304,16 @@
                     _iFFPopulated: {
                         type: Boolean,
                         value: false
+                    },
+
+                    _profilePaxList: {
+                        type: Array,
+                        value: []
+                    },
+
+                    profileUserDetails: {
+                        type: Object,
+                        observer: '_generatePassengerList'
                     },
 
                     frequentFlyerUrl: String
@@ -362,6 +397,61 @@
                 _updatePage: function () {
                     this._iFFPopulated = false;
                     this._updatePassengerDetails();
+                },
+
+                _generatePassengerList: function (newValue, oldValue) {
+                    var name = newValue.basicInfo.name;
+                    var paxList = [];
+                    var pax = {
+                        id: "0",
+                        personalDetails: {
+                            name: {
+                                title: name.title,
+                                firstName: name.firstName,
+                                middleName: name.middleName,
+                                lastName: name.lastName,
+                                fullName: name.title + ' ' + name.firstName + ' ' + name.lastName,
+                                suffix: name.suffix,
+                                prefix: name.prefix
+                            },
+                            dateOfBirth: newValue.basicInfo.dateOfBirth,
+                            gender: newValue.basicInfo.gender,
+                            email: newValue.contacts.emails[0].value,
+                            phone: newValue.contacts.phones[0].value
+                        },
+                        passport: newValue.passports[0],
+                        memberships: newValue.memberships
+                    }
+
+                    paxList = newValue.fellowTravellers;
+                    paxList.splice(-paxList.length, 0, pax);
+                    this._profilePaxList = paxList;
+                },
+
+                _updatePassenger: function (e, obj) {
+                    if (!obj.selectedOption.personalDetails) {
+                        this._emptyPassengerFeilds(obj.context);
+                        return;
+                    }
+                    
+                    //copy object
+                    var name = obj.selectedOption.personalDetails.name;
+                    this.$$("#passenger-" + obj.context).firstName = name.firstName;
+                    this.$$("#passenger-" + obj.context).middleName = name.middleName;
+                    this.$$("#passenger-" + obj.context).lastName = name.lastName;
+                    this.$$("#passenger-" + obj.context).title = name.title;
+                    this.$$("#passenger-" + obj.context).suffix = name.suffix;
+                    var dateComps = this._getDateComponents(obj.selectedOption.personalDetails.dateOfBirth.date);
+                    this.$$("#passenger-" + obj.context).dateOfBirth = dateComps.monthIndex + '/' + dateComps.date + '/' + dateComps.year;
+                },
+
+                _emptyPassengerFeilds: function (paxRph) {
+                    this.$$("#passenger-" + paxRph).firstName = '';
+                    this.$$("#passenger-" + paxRph).middleName = '';
+                    this.$$("#passenger-" + paxRph).lastName = '';
+                    this.$$("#passenger-" + paxRph).title = '';
+                    this.$$("#passenger-" + paxRph).suffix = '';
+                    this.$$("#passenger-" + paxRph).dateOfBirth = null;
                 },
 
                 _syncSession: function () {
