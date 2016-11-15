@@ -361,8 +361,10 @@
                     case 'child':
                     case 'infant':
                         return ["Master", "Miss"];
+                    case 'all':
+                        return ["Mr", "Ms", "Mrs","Master", "Miss"];
                     default:
-                        throw Error("Passenger type not supported");
+                        return ["Mr", "Ms", "Mrs","Master", "Miss"];
 
                 }
             },
